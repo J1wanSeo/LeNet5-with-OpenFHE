@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.10)
+project(matrix_mult)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include_directories(/usr/local/include/openfhe)
+link_directories(/usr/local/lib)
+
+add_executable(matrix_mult matrix_mult.cpp)
+
+target_link_libraries(matrix_mult
+    openfhe-pke
+    openfhe-core
+    openfhe-hexl
+    openfhe-serialize
+    pthread
+    stdc++fs
+)
+
