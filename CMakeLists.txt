@@ -56,4 +56,5 @@ endif()
 ### add_executable(EXECUTABLE-NAME SOURCES)
 ###
 ### EXAMPLE:
-add_executable(test matrix_vector_mult.cpp)
+### add_executable(fc_test matrix_vector_mult.cpp)
+add_executable(conv_test conv_layer_full.cpp)

@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ubuntu/openfhe_LeNet-5
+CMAKE_SOURCE_DIR = /home/jwseo/openfhe_LeNet-5
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ubuntu/openfhe_LeNet-5/build
+CMAKE_BINARY_DIR = /home/jwseo/openfhe_LeNet-5/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/openfhe_LeNet-5/build/CMakeFiles /home/ubuntu/openfhe_LeNet-5/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jwseo/openfhe_LeNet-5/build/CMakeFiles /home/jwseo/openfhe_LeNet-5/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/openfhe_LeNet-5/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jwseo/openfhe_LeNet-5/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -117,41 +117,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named test
+# Target rules for targets named conv_test
 
 # Build rule for target.
-test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
-.PHONY : test
+conv_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 conv_test
+.PHONY : conv_test
 
 # fast build rule for target.
-test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
-.PHONY : test/fast
+conv_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/build
+.PHONY : conv_test/fast
 
-matrix_vector_mult.o: matrix_vector_mult.cpp.o
-.PHONY : matrix_vector_mult.o
+conv_layer_full.o: conv_layer_full.cpp.o
+.PHONY : conv_layer_full.o
 
 # target to build an object file
-matrix_vector_mult.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/matrix_vector_mult.cpp.o
-.PHONY : matrix_vector_mult.cpp.o
+conv_layer_full.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full.cpp.o
+.PHONY : conv_layer_full.cpp.o
 
-matrix_vector_mult.i: matrix_vector_mult.cpp.i
-.PHONY : matrix_vector_mult.i
+conv_layer_full.i: conv_layer_full.cpp.i
+.PHONY : conv_layer_full.i
 
 # target to preprocess a source file
-matrix_vector_mult.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/matrix_vector_mult.cpp.i
-.PHONY : matrix_vector_mult.cpp.i
+conv_layer_full.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full.cpp.i
+.PHONY : conv_layer_full.cpp.i
 
-matrix_vector_mult.s: matrix_vector_mult.cpp.s
-.PHONY : matrix_vector_mult.s
+conv_layer_full.s: conv_layer_full.cpp.s
+.PHONY : conv_layer_full.s
 
 # target to generate assembly for a file
-matrix_vector_mult.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/matrix_vector_mult.cpp.s
-.PHONY : matrix_vector_mult.cpp.s
+conv_layer_full.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full.cpp.s
+.PHONY : conv_layer_full.cpp.s
 
 # Help Target
 help:
@@ -161,10 +161,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... test"
-	@echo "... matrix_vector_mult.o"
-	@echo "... matrix_vector_mult.i"
-	@echo "... matrix_vector_mult.s"
+	@echo "... conv_test"
+	@echo "... conv_layer_full.o"
+	@echo "... conv_layer_full.i"
+	@echo "... conv_layer_full.s"
 .PHONY : help
 
 
