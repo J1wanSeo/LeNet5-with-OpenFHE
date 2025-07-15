@@ -10,14 +10,9 @@ using namespace lbcrypto;
 
 std::vector<double> LoadFromTxt(const std::string& filename) {
     std::ifstream infile(filename);
-    if (!infile.is_open()) {
-        std::cerr << "❌ 파일 열기 실패: " << filename << std::endl;
-        return {};
-    }
-
     std::vector<double> data;
     std::string content;
-    std::getline(infile, content); // 한 줄 전체 읽기
+    std::getline(infile, content); 
 
     std::stringstream ss(content);
     std::string token;
@@ -26,22 +21,15 @@ std::vector<double> LoadFromTxt(const std::string& filename) {
             try {
                 data.push_back(std::stod(token));
             } catch (const std::exception& e) {
-                std::cerr << "⚠ 변환 실패: '" << token << "' (" << e.what() << ")" << std::endl;
+                std::cerr << "Failed: '" << token << "' (" << e.what() << ")" << std::endl;
             }
         }
-    }
-
-    if (data.empty()) {
-        std::cerr << "❌ [LoadFromTxt] 파일은 있지만 읽은 값이 없음: " << filename << std::endl;
     }
 
     return data;
 }
 
 
-
-
-// 수정된 Conv2D 함수: 위치 정보 (baseRow, baseCol) 받아서 회전 처리
 Ciphertext<DCRTPoly> Conv2D_CKKS(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_input,
@@ -53,7 +41,7 @@ Ciphertext<DCRTPoly> Conv2D_CKKS(
     double bias,
     const PublicKey<DCRTPoly>& pubkey,
     const std::vector<int>& rot_indices,
-    size_t baseRow, size_t baseCol // ✅ 위치 정보
+    size_t baseRow, size_t baseCol
 ) {
 
     std::vector<Ciphertext<DCRTPoly>> rotatedCts;
@@ -61,11 +49,11 @@ Ciphertext<DCRTPoly> Conv2D_CKKS(
     for (size_t dy = 0; dy < filterH; dy++) {
         for (size_t dx = 0; dx < filterW; dx++) {
             size_t idx = dy * filterW + dx;
-            int rotAmount = (baseRow + dy) * inputW + (baseCol + dx); // 전체 위치 기준 회전
+            int rotAmount = (baseRow + dy) * inputW + (baseCol + dx);
             auto rotated = cc->EvalRotate(ct_input, rotAmount);
 
             std::vector<double> wt(inputH * inputW, 0.0);
-            wt[0] = filter[idx]; // filter weight만 남긴 plaintext
+            wt[0] = filter[idx];
             auto pt_w = cc->MakeCKKSPackedPlaintext(wt);
 
             auto ct_mul = cc->EvalMult(rotated, pt_w);
@@ -82,7 +70,6 @@ Ciphertext<DCRTPoly> Conv2D_CKKS(
     return cc->EvalAdd(ct_sum, pt_bias);
 }
 
-// 전체 위치에 대해 Conv2D 수행 (stride 지원)
 std::vector<double> Conv2D_FullOutput_Stride(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_input,
@@ -98,15 +85,13 @@ std::vector<double> Conv2D_FullOutput_Stride(
 //    size_t outH = (inputH - filterH) / stride + 1;
 //    size_t outW = (inputW - filterW) / stride + 1;
 
-
-
     std::vector<double> outputs;
 
     for (size_t i = 0; i <= inputH - filterH; i += stride) {
         for (size_t j = 0; j <= inputW - filterW; j += stride) {
             auto ct_out = Conv2D_CKKS(cc, ct_input, filter, inputH, inputW,
                                       filterH, filterW, bias, pubkey, rot_indices,
-                                      i, j); // ✅ (i,j) 위치 전달
+                                      i, j);
 
             Plaintext pt_out;
             cc->Decrypt(secretKey, ct_out, &pt_out);
@@ -119,7 +104,7 @@ std::vector<double> Conv2D_FullOutput_Stride(
 }
 
 int main() {
-    // CKKS 설정
+    // CKKS Configuration
     CCParams<CryptoContextCKKSRNS> params;
     params.SetRingDim(1 << 14);
     params.SetScalingModSize(40);
@@ -134,11 +119,7 @@ int main() {
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
 
-    
-
-
-    // Loading Data
-    // Load data
+    // Load data from txt
     auto img = LoadFromTxt("../input_image.txt");
     auto filters = LoadFromTxt("../conv1_weight.txt");
     auto biases = LoadFromTxt("../conv1_bias.txt");
@@ -149,6 +130,7 @@ int main() {
     size_t stride = 1;
     size_t inputH = 32, inputW = 32;
     size_t filterH = 5, filterW = 5;
+    size_t channel = 6;
     size_t outH = (inputH - filterH) / stride + 1;
     size_t outW = (inputW - filterW) / stride + 1;
 
@@ -168,10 +150,7 @@ int main() {
     std::vector<int> rot_indices(rot_index_set.begin(), rot_index_set.end());
     cc->EvalAtIndexKeyGen(keys.secretKey, rot_indices);
 
-
-    std::cout << "[Conv1 결과 출력 (stride=" << stride << ")]" << std::endl;
-
-    for (size_t ch = 0; ch < 1; ch++) {
+    for (size_t ch = 0; ch < channel; ch++) {
         std::vector<double> filter(filters.begin() + ch * 25, filters.begin() + (ch + 1) * 25);
         double bias = biases[ch];
 
@@ -187,7 +166,7 @@ int main() {
         );
 
         if (ch == 0) {
-            std::ofstream outfile("conv1_output_channel0.txt");
+            std::ofstream outfile("conv1_output_channel_0.txt");
             for (size_t i = 0; i < outH; i++) {
                 for (size_t j = 0; j < outW; j++) {
                     outfile << outputs[i * outW + j];
@@ -198,7 +177,6 @@ int main() {
             outfile.close();
         }
 
-    // (이제 출력은 생략!)
     }
 
 
