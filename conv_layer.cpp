@@ -1,11 +1,9 @@
-// OpenFHE convolution layer (UniHENN 스타일) 구현 예시
 #include "openfhe.h"
 #include <vector>
 #include <iostream>
 
 using namespace lbcrypto;
 
-// Conv2D 암호 연산 함수 (UniHENN 스타일)
 Ciphertext<DCRTPoly> Conv2D_CKKS(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_input,
@@ -27,7 +25,7 @@ Ciphertext<DCRTPoly> Conv2D_CKKS(
             auto rotated = cc->EvalRotate(ct_input, rotAmount);
 
             std::vector<double> wt(inputH * inputW, 0.0);
-            wt[0] = filter[idx]; // weight를 한 곳에만 위치시키는 UniHENN 방식
+            wt[0] = filter[idx]; 
             auto pt_w = cc->MakeCKKSPackedPlaintext(wt);
             auto ct_mul = cc->EvalMult(rotated, pt_w);
             rotatedCts.push_back(ct_mul);
@@ -45,7 +43,6 @@ Ciphertext<DCRTPoly> Conv2D_CKKS(
 }
 
 int main() {
-    // CKKS context 설정
     CCParams<CryptoContextCKKSRNS> params;
     params.SetRingDim(1 << 14);
     params.SetScalingModSize(40);
@@ -64,7 +61,6 @@ int main() {
     for (int i = 0; i <= 12; i++) rot_indices.push_back(i);
     cc->EvalAtIndexKeyGen(keys.secretKey, rot_indices);
 
-    // 입력 이미지 5x5를 flatten
     std::vector<double> img = {
         1, 2, 3, 4, 5,
         6, 7, 8, 9, 10,
@@ -85,8 +81,8 @@ int main() {
     auto ct_conv = Conv2D_CKKS(cc, ct_img, filter, 5, 5, 3, 3, 1.0, keys.publicKey, rot_indices);
     Plaintext pt_result;
     cc->Decrypt(keys.secretKey, ct_conv, &pt_result);
-    pt_result->SetLength(9); // 출력 3x3
-    std::cout << "[Convolution 결과]" << std::endl;
+    pt_result->SetLength(9); 
+    std::cout << "[Convolution]" << std::endl;
     std::cout << pt_result << std::endl;
 
     return 0;

@@ -165,20 +165,17 @@ int main() {
             keys.secretKey
         );
 
-        if (ch == 0) {
-            std::ofstream outfile("conv1_output_channel_0.txt");
-            for (size_t i = 0; i < outH; i++) {
-                for (size_t j = 0; j < outW; j++) {
-                    outfile << outputs[i * outW + j];
-                    if (j != outW - 1) outfile << ",";
-                }
-                outfile << "\n";
+        std::string filename = "conv1_output_channel_" + std::to_string(ch) + ".txt";
+        std::ofstream outfile(filename);
+        for (size_t i = 0; i < outH; i++) {
+            for (size_t j = 0; j < outW; j++) {
+                outfile << outputs[i * outW + j];
+                if (j != outW - 1) outfile << ",";
             }
-            outfile.close();
+            outfile << "\n";
         }
-
+        outfile.close();
     }
-
 
     return 0;
 }
