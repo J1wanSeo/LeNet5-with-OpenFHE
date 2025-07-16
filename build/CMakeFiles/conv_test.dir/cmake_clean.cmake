@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/conv_test.dir/conv_layer_full.cpp.o"
-  "CMakeFiles/conv_test.dir/conv_layer_full.cpp.o.d"
+  "CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o"
+  "CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o.d"
   "conv_test"
   "conv_test.pdb"
 )

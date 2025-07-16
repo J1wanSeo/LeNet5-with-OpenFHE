@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/jwseo/openfhe_LeNet-5/conv_layer_full.cpp" "CMakeFiles/conv_test.dir/conv_layer_full.cpp.o" "gcc" "CMakeFiles/conv_test.dir/conv_layer_full.cpp.o.d"
+  "/home/ubuntu/LeNet5-with-OpenFHE/conv_layer_full_bn.cpp" "CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o" "gcc" "CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o.d"
   )
 
 # Targets to which this target links.

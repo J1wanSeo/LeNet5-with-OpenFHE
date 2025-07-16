@@ -57,4 +57,4 @@ endif()
 ###
 ### EXAMPLE:
 ### add_executable(fc_test matrix_vector_mult.cpp)
-add_executable(conv_test conv_layer_full.cpp)
+add_executable(conv_test conv_layer_full_bn.cpp)

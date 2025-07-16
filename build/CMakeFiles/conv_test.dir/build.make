@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jwseo/openfhe_LeNet-5
+CMAKE_SOURCE_DIR = /home/ubuntu/LeNet5-with-OpenFHE
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jwseo/openfhe_LeNet-5/build
+CMAKE_BINARY_DIR = /home/ubuntu/LeNet5-with-OpenFHE/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/conv_test.dir/depend.make
@@ -69,34 +69,34 @@ include CMakeFiles/conv_test.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/conv_test.dir/flags.make
 
-CMakeFiles/conv_test.dir/conv_layer_full.cpp.o: CMakeFiles/conv_test.dir/flags.make
-CMakeFiles/conv_test.dir/conv_layer_full.cpp.o: ../conv_layer_full.cpp
-CMakeFiles/conv_test.dir/conv_layer_full.cpp.o: CMakeFiles/conv_test.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/conv_test.dir/conv_layer_full.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_test.dir/conv_layer_full.cpp.o -MF CMakeFiles/conv_test.dir/conv_layer_full.cpp.o.d -o CMakeFiles/conv_test.dir/conv_layer_full.cpp.o -c /home/jwseo/openfhe_LeNet-5/conv_layer_full.cpp
+CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o: CMakeFiles/conv_test.dir/flags.make
+CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o: ../conv_layer_full_bn.cpp
+CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o: CMakeFiles/conv_test.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o -MF CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o.d -o CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o -c /home/ubuntu/LeNet5-with-OpenFHE/conv_layer_full_bn.cpp
 
-CMakeFiles/conv_test.dir/conv_layer_full.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/conv_test.dir/conv_layer_full.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jwseo/openfhe_LeNet-5/conv_layer_full.cpp > CMakeFiles/conv_test.dir/conv_layer_full.cpp.i
+CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/LeNet5-with-OpenFHE/conv_layer_full_bn.cpp > CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.i
 
-CMakeFiles/conv_test.dir/conv_layer_full.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/conv_test.dir/conv_layer_full.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jwseo/openfhe_LeNet-5/conv_layer_full.cpp -o CMakeFiles/conv_test.dir/conv_layer_full.cpp.s
+CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/LeNet5-with-OpenFHE/conv_layer_full_bn.cpp -o CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.s
 
 # Object files for target conv_test
 conv_test_OBJECTS = \
-"CMakeFiles/conv_test.dir/conv_layer_full.cpp.o"
+"CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o"
 
 # External object files for target conv_test
 conv_test_EXTERNAL_OBJECTS =
 
-conv_test: CMakeFiles/conv_test.dir/conv_layer_full.cpp.o
+conv_test: CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o
 conv_test: CMakeFiles/conv_test.dir/build.make
-conv_test: /usr/local/lib/libOPENFHEpke.so.1.3.1
-conv_test: /usr/local/lib/libOPENFHEbinfhe.so.1.3.1
-conv_test: /usr/local/lib/libOPENFHEcore.so.1.3.1
+conv_test: /usr/local/lib/libOPENFHEpke.so.1.3.0
+conv_test: /usr/local/lib/libOPENFHEbinfhe.so.1.3.0
+conv_test: /usr/local/lib/libOPENFHEcore.so.1.3.0
 conv_test: CMakeFiles/conv_test.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable conv_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable conv_test"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/conv_test.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -108,6 +108,6 @@ CMakeFiles/conv_test.dir/clean:
 .PHONY : CMakeFiles/conv_test.dir/clean
 
 CMakeFiles/conv_test.dir/depend:
-	cd /home/jwseo/openfhe_LeNet-5/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jwseo/openfhe_LeNet-5 /home/jwseo/openfhe_LeNet-5 /home/jwseo/openfhe_LeNet-5/build /home/jwseo/openfhe_LeNet-5/build /home/jwseo/openfhe_LeNet-5/build/CMakeFiles/conv_test.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ubuntu/LeNet5-with-OpenFHE/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/LeNet5-with-OpenFHE /home/ubuntu/LeNet5-with-OpenFHE /home/ubuntu/LeNet5-with-OpenFHE/build /home/ubuntu/LeNet5-with-OpenFHE/build /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles/conv_test.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/conv_test.dir/depend
 

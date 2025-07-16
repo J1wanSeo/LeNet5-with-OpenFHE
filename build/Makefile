@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jwseo/openfhe_LeNet-5
+CMAKE_SOURCE_DIR = /home/ubuntu/LeNet5-with-OpenFHE
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jwseo/openfhe_LeNet-5/build
+CMAKE_BINARY_DIR = /home/ubuntu/LeNet5-with-OpenFHE/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jwseo/openfhe_LeNet-5/build/CMakeFiles /home/jwseo/openfhe_LeNet-5/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles /home/ubuntu/LeNet5-with-OpenFHE/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jwseo/openfhe_LeNet-5/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -129,29 +129,29 @@ conv_test/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/build
 .PHONY : conv_test/fast
 
-conv_layer_full.o: conv_layer_full.cpp.o
-.PHONY : conv_layer_full.o
+conv_layer_full_bn.o: conv_layer_full_bn.cpp.o
+.PHONY : conv_layer_full_bn.o
 
 # target to build an object file
-conv_layer_full.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full.cpp.o
-.PHONY : conv_layer_full.cpp.o
+conv_layer_full_bn.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.o
+.PHONY : conv_layer_full_bn.cpp.o
 
-conv_layer_full.i: conv_layer_full.cpp.i
-.PHONY : conv_layer_full.i
+conv_layer_full_bn.i: conv_layer_full_bn.cpp.i
+.PHONY : conv_layer_full_bn.i
 
 # target to preprocess a source file
-conv_layer_full.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full.cpp.i
-.PHONY : conv_layer_full.cpp.i
+conv_layer_full_bn.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.i
+.PHONY : conv_layer_full_bn.cpp.i
 
-conv_layer_full.s: conv_layer_full.cpp.s
-.PHONY : conv_layer_full.s
+conv_layer_full_bn.s: conv_layer_full_bn.cpp.s
+.PHONY : conv_layer_full_bn.s
 
 # target to generate assembly for a file
-conv_layer_full.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full.cpp.s
-.PHONY : conv_layer_full.cpp.s
+conv_layer_full_bn.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_test.dir/build.make CMakeFiles/conv_test.dir/conv_layer_full_bn.cpp.s
+.PHONY : conv_layer_full_bn.cpp.s
 
 # Help Target
 help:
@@ -162,9 +162,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... conv_test"
-	@echo "... conv_layer_full.o"
-	@echo "... conv_layer_full.i"
-	@echo "... conv_layer_full.s"
+	@echo "... conv_layer_full_bn.o"
+	@echo "... conv_layer_full_bn.i"
+	@echo "... conv_layer_full_bn.s"
 .PHONY : help
 
 
