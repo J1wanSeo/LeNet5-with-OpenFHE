@@ -61,11 +61,14 @@ def approx_relu4(x):
 with torch.no_grad():
     x = conv1(input_tensor)
     x = bn1(x)
-    print("[PyTorch] Conv1 각 채널별 첫 sample:")
-    for ch in range(x.shape[1]):  # x shape: (1, 6, 16, 16)
-        sample_value = x[0, ch, 0, 0].item()
-        print(f"[Conv ch {ch}] Sample value: {sample_value:.8f}")
     x = approx_relu4(x)
+    out_path = "./build/"
+    for ch in range(6):
+        np.savetxt(
+            os.path.join(out_path, f"pytorch_output_conv1_ch{ch}.txt"),
+            x[0, ch].view(-1).numpy(),
+            delimiter=","
+        )
     x = torch.nn.functional.avg_pool2d(x, kernel_size=2, stride=2)
 
     # x = conv2(x)

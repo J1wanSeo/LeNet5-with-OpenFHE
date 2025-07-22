@@ -105,8 +105,6 @@ Ciphertext<DCRTPoly> BatchNormOnCiphertext(
 ) {
     double epsilon = 1e-5;
     double a = gamma / std::sqrt(var + epsilon);
-    // ❗ FIX: 배치 정규화 수식을 PyTorch와 일치시킵니다.
-    // Conv의 bias는 BN의 mean 차감으로 인해 효과가 사라지므로, BN의 beta만 사용합니다.
     double b = beta - a * mean;
 
     auto pt_a = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, a));
