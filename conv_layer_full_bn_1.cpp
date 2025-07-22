@@ -3,20 +3,11 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <set>
 
 using namespace lbcrypto;
 
-// 텍스트 파일에서 double 벡터를 로드하는 함수
 std::vector<double> LoadFromTxt(const std::string& filename) {
     std::ifstream infile(filename);
-    if (!infile.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return {};
-    }
     std::vector<double> data;
     std::string content;
     std::getline(infile, content);
@@ -28,89 +19,78 @@ std::vector<double> LoadFromTxt(const std::string& filename) {
             try {
                 data.push_back(std::stod(token));
             } catch (const std::exception& e) {
-                std::cerr << "Failed to parse token: '" << token << "' (" << e.what() << ")" << std::endl;
+                std::cerr << "Failed: '" << token << "' (" << e.what() << ")" << std::endl;
             }
         }
     }
     return data;
 }
 
-
 Ciphertext<DCRTPoly> Conv2D_CKKS_SIMD_Masked(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_input,
     const std::vector<double>& filter,
-    double bias,
     size_t inputH, size_t inputW,
     size_t filterH, size_t filterW,
-    size_t stride) {
-        
+    size_t stride,
+    const PublicKey<DCRTPoly>& pubkey
+) {
     size_t outH = (inputH - filterH) / stride + 1;
     size_t outW = (inputW - filterW) / stride + 1;
     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
 
     std::vector<Ciphertext<DCRTPoly>> partials;
+	// filter index to evaluate 
     for (size_t dy = 0; dy < filterH; dy++) {
         for (size_t dx = 0; dx < filterW; dx++) {
-            size_t idx = dy * filterW + dx;
-            int rotAmount = dy * inputW + dx; 
-            auto rotated = cc->EvalRotate(ct_input, rotAmount);
+            size_t idx = dy * filterW + dx; // 1-d index to get weight from filter
+            int rotAmount = dy * inputW + dx; // rotate input to multiply with weight
+            auto rotated = cc->EvalRotate(ct_input, rotAmount); // execute rotation
 
-            std::vector<double> mask(slotCount, 0.0);
-            for (size_t i = 0; i < outH; i++) {
-                for (size_t j = 0; j < outW; j++) {
-                    size_t padded_idx = i * inputW + j;
-                    if (padded_idx < slotCount) {
-                        mask[padded_idx] = 1.0;
-                    }
+            std::vector<double> mask(slotCount, 0.0); // initialize mask
+            for (size_t i = 0; i < outH; i++) { // saving index to output
+                for (size_t j = 0; j < outW; j++) { // same with above description
+                    // size_t baseRow = i * stride; // baseRow means to left top coordinate
+                    // size_t baseCol = j * stride; // baseCol means to left top coordinate
+                    // size_t inputIndex = (baseRow + dy) * inputW + (baseCol + dx);// 1d index of input to multiply with weight 
+                    size_t flatIdx = i * outW + j; //1-d index to insert output
+                    // if (inputIndex < slotCount && flatIdx < outH * outW) // generally goes through it, depends on number of outputs
+                    if (flatIdx < slotCount){
+                        // mask[flatIdx] += filter[idx];
+                        mask[flatIdx] = 1.0;
                 }
             }
+        }
             auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
             auto masked_rotated = cc->EvalMult(rotated, pt_mask);
-            auto ct_weighted = cc->EvalMult(masked_rotated, filter[idx]);
+            auto ct_weighted = cc->EvalMult(masked_rotated, filter[idx]);  // 필터 weight 곱셈
 
             partials.push_back(ct_weighted);
+            // auto ct_partial = cc->EvalMult(rotated, pt_mask);
+            // partials.push_back(ct_partial);
         }
     }
-    Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
 
-    // ADDED: Add bias to the result
-    // The bias is added to every relevant output slot.
-    std::vector<double> bias_vector(slotCount, 0.0);
-    for (size_t i = 0; i < outH; ++i) {
-        for (size_t j = 0; j < outW; ++j) {
-            size_t padded_idx = i * inputW + j;
-            if (padded_idx < slotCount) {
-                bias_vector[padded_idx] = bias;
-            }
-        }
-    }
-    auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vector);
-    result = cc->EvalAdd(result, pt_bias);
+    return cc->EvalAddMany(partials);
 
-    return result;
 }
 
-
-/**
- * @brief 암호문에 대해 배치 정규화를 수행합니다.
- * PyTorch의 `BatchNorm`과 동일한 결과를 내도록 수식을 수정했습니다.
- */
 Ciphertext<DCRTPoly> BatchNormOnCiphertext(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_input,
     double gamma, double beta,
     double mean, double var,
+    double bias,
     size_t slotCount
 ) {
     double epsilon = 1e-5;
     double a = gamma / std::sqrt(var + epsilon);
-    // ❗ FIX: 배치 정규화 수식을 PyTorch와 일치시킵니다.
-    // Conv의 bias는 BN의 mean 차감으로 인해 효과가 사라지므로, BN의 beta만 사용합니다.
-    double b = beta - a * mean;
+    double b = -a * mean + a * bias + beta;
 
-    auto pt_a = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, a));
-    auto pt_b = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, b));
+    std::vector<double> a_vec(slotCount, a);
+    std::vector<double> b_vec(slotCount, b);
+    auto pt_a = cc->MakeCKKSPackedPlaintext(a_vec);
+    auto pt_b = cc->MakeCKKSPackedPlaintext(b_vec);
 
     auto ct_scaled = cc->EvalMult(ct_input, pt_a);
     return cc->EvalAdd(ct_scaled, pt_b);
@@ -134,8 +114,7 @@ int main() {
     cc->EvalMultKeyGen(keys.secretKey);
 
     auto t_load_start = std::chrono::high_resolution_clock::now();
-    
-    // 데이터 파일 경로는 실제 환경에 맞게 수정해주세요.
+
     auto img = LoadFromTxt("../input_image.txt");
     auto filters = LoadFromTxt("../lenet_weights_epoch(10)/conv1_weight.txt");
     auto biases = LoadFromTxt("../lenet_weights_epoch(10)/conv1_bias.txt");
@@ -162,75 +141,85 @@ int main() {
     std::set<int> rot_index_set;
     for (size_t dy = 0; dy < filterH; dy++) {
         for (size_t dx = 0; dx < filterW; dx++) {
-            rot_index_set.insert(dy * inputW + dx);
+            int rot = dy * inputW + dx;
+            rot_index_set.insert(rot);
         }
     }
-    cc->EvalRotateKeyGen(keys.secretKey, std::vector<int>(rot_index_set.begin(), rot_index_set.end()));
+    std::vector<int> rot_indices(rot_index_set.begin(), rot_index_set.end());
+    cc->EvalAtIndexKeyGen(keys.secretKey, rot_indices);
 
     auto t_keygen_end = std::chrono::high_resolution_clock::now();
     std::cout << "[Time] Rotation KeyGen: " << std::chrono::duration<double>(t_keygen_end - t_keygen_start).count() << " sec\n";
 
     for (size_t ch = 0; ch < channel; ch++) {
         std::vector<double> filter(filters.begin() + ch * 25, filters.begin() + (ch + 1) * 25);
-        double bias = biases[ch];
+
         auto t_conv_start = std::chrono::high_resolution_clock::now();
+
         auto ct_conv = Conv2D_CKKS_SIMD_Masked(
-            cc, ct_img, filter, bias,
-            inputH, inputW, filterH, filterW, stride
+            cc, ct_img, filter,
+            inputH, inputW,
+            filterH, filterW,
+            stride,
+            keys.publicKey
         );
+
         auto t_conv_end = std::chrono::high_resolution_clock::now();
         std::cout << "[Time] Conv2D (channel " << ch << "): " << std::chrono::duration<double>(t_conv_end - t_conv_start).count() << " sec\n";
 
-        // ✨ ADDITION: 배치 정규화 이전 결과(컨볼루션 출력) 저장
-        Plaintext pt_conv_out;
-        cc->Decrypt(keys.secretKey, ct_conv, &pt_conv_out);
-        auto vec_conv = pt_conv_out->GetRealPackedValue();
-        std::string conv_filename = "conv1_output_channel_b4_bn_" + std::to_string(ch) + ".txt";
-        std::ofstream conv_outfile(conv_filename);
-        conv_outfile << std::fixed << std::setprecision(8);
-        for (size_t i = 0; i < outH; i++) {
-            for (size_t j = 0; j < outW; j++) {
-                conv_outfile << vec_conv[i * inputW + j];
-                if (j < outW - 1) conv_outfile << ",\n";
-            }
-            if (i < outH - 1) conv_outfile << ",\n";
-        }
-        conv_outfile.close();
-        std::cout << "Intermediate result for channel " << ch << " saved to " << conv_filename << std::endl;
-
         auto t_bn_start = std::chrono::high_resolution_clock::now();
+
         auto ct_bn = BatchNormOnCiphertext(
             cc, ct_conv,
             bn_gamma[ch], bn_beta[ch],
             bn_mean[ch], bn_var[ch],
-            cc->GetEncodingParams()->GetBatchSize()
+            biases[ch],
+            outH * outW
         );
+
         auto t_bn_end = std::chrono::high_resolution_clock::now();
         std::cout << "[Time] BatchNorm (channel " << ch << "): " << std::chrono::duration<double>(t_bn_end - t_bn_start).count() << " sec\n";
 
-        Plaintext pt_bn_out;
-        cc->Decrypt(keys.secretKey, ct_bn, &pt_bn_out);
-        auto vec_bn = pt_bn_out->GetRealPackedValue();
+        Plaintext pt;
+        cc->Decrypt(keys.secretKey, ct_conv, &pt);
+        pt->SetLength(outH * outW);
+        auto vec = pt->GetRealPackedValue();
 
-        // 최종 결과(배치 정규화 이후) 저장
-        std::string bn_filename = "conv1_output_channel_" + std::to_string(ch) + ".txt";
-        std::ofstream bn_outfile(bn_filename);
-        bn_outfile << std::fixed << std::setprecision(8);
-
+        std::string filename = "conv1_output_channel_b4_bn" + std::to_string(ch) + ".txt";
+        std::ofstream outfile(filename);
         for (size_t i = 0; i < outH; i++) {
             for (size_t j = 0; j < outW; j++) {
-                // 결과는 inputW 너비로 패딩되어 있으므로, 해당 인덱스에서 값을 가져옵니다.
-                bn_outfile << vec_bn[i * inputW + j];
-                if (j < outW - 1) {
-                    bn_outfile << ",\n";
+                outfile << vec[i * outW + j];
+                if (j != outW - 1) outfile << ",\n";
+            }
+            outfile << "\n";
+        }
+        outfile.close();
+
+
+       
+        cc->Decrypt(keys.secretKey, ct_bn, &pt);
+        // pt->SetLength(outH * outW); // 이 줄은 내부 계산에 사용될 뿐, vec의 길이를 물리적으로 자르지 않습니다.
+
+        filename = "conv1_output_channel_" + std::to_string(ch) + ".txt";
+        
+
+        size_t valid_elements_per_row = outW; // 28
+        size_t actual_elements_in_vec_row = 32; // (예상) 한 행으로 사용되는 vec의 실제 길이 (28 유효값 + 4 추가값)
+
+        for (size_t i = 0; i < outH; i++) { // outH번 반복 (28번)
+            for (size_t j = 0; j < valid_elements_per_row; j++) { // 각 행에서 outW개만 유효하다고 가정 (28번)
+                // 현재 행의 시작 인덱스 + 열 인덱스
+                size_t current_index_in_vec = i * actual_elements_in_vec_row + j;
+                outfile << vec[current_index_in_vec];
+
+                // 마지막 요소가 아니면 콤마와 개행 추가
+                if (!((i == outH - 1) && (j == valid_elements_per_row - 1))) {
+                    outfile << ",\n";
                 }
             }
-            if (i < outH - 1) {
-                bn_outfile << ",\n";
-            }
         }
-        bn_outfile.close();
-        std::cout << "Final result for channel " << ch << " saved to " << bn_filename << std::endl;
+        outfile.close();
     }
 
     auto t_end = std::chrono::high_resolution_clock::now();
