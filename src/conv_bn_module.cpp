@@ -53,7 +53,7 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
             std::vector<double> mask(slotCount, 0.0);
             for (size_t i = 0; i < outH; i++) {
                 for (size_t j = 0; j < outW; j++) {
-                    size_t padded_idx = rotAmount + i * outW + j;
+                    size_t padded_idx = (i * stride + dy) * inputW + (j * stride + dx);
                     if (padded_idx < slotCount) {
                         mask[padded_idx] = 1.0;
                     }
@@ -73,8 +73,8 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
 
     // Bias Addition
     std::vector<double> bias_vector(slotCount, 0.0);
-    for (size_t i = 0; i < outH; ++i) {
-        for (size_t j = 0; j < outW; ++j) {
+    for (size_t i = 0; i < outH; i++) {
+        for (size_t j = 0; j < outW; j++) {
             size_t padded_idx = i * outW + j;
             if (padded_idx < slotCount) {
                 bias_vector[padded_idx] = bias;
@@ -214,8 +214,8 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
     for (const auto& ct : ct_channels) {
         std::vector<Ciphertext<DCRTPoly>> partials;
 
-        for (size_t dy = 0; dy < 2; ++dy) {
-            for (size_t dx = 0; dx < 2; ++dx) {
+        for (size_t dy = 0; dy < 2; dy++) {
+            for (size_t dx = 0; dx < 2; dx++) {
                 int rot = dy * inputW + dx;
                 auto rotated = cc->EvalRotate(ct, rot);
 

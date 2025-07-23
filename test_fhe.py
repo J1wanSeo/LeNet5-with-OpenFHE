@@ -10,8 +10,8 @@ def load_txt_tensor(path, shape):
     return torch.tensor(data, dtype=torch.float32).view(*shape)
 
 # ==== 1. Load Input & Parameters ====
-input_image = torch.rand(1, 1, 32, 32, dtype=torch.float32).view(1, 1, 32, 32)
-np.savetxt("./lenet_weights_epoch(10)/input_image.txt", input_image.view(1, -1).numpy(), delimiter=",")
+# input_image = torch.rand(1, 1, 32, 32, dtype=torch.float32).view(1, 1, 32, 32)
+# np.savetxt("./lenet_weights_epoch(10)/input_image.txt", input_image.view(1, -1).numpy(), delimiter=",")
 
 base_path = "./lenet_weights_epoch(10)"
 input_tensor = load_txt_tensor("./lenet_weights_epoch(10)/input_image.txt", (1, 1, 32, 32))
@@ -48,10 +48,7 @@ with torch.no_grad():
     x_relu = approx_relu4(x_bn)          # ApproxReLU4
 
     # Optional 이후 처리:
-    # x_pool = torch.nn.functional.avg_pool2d(x_relu, kernel_size=2, stride=2)
-
-
-
+    x_pool = torch.nn.functional.avg_pool2d(x_relu, kernel_size=2, stride=2)
 
 # ==== 5. Save Output ====
 out_path = "./results/"
@@ -70,5 +67,11 @@ for ch in range(6):
     np.savetxt(
         os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_avgpool.txt"),
         x_relu[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+for ch in range(6):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv1_output_channel_{ch}.txt"),
+        x_pool[0, ch].view(-1).numpy(),
         delimiter=","
     )

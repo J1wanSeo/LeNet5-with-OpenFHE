@@ -77,61 +77,61 @@ int main() {
     }
 
 
-    // t0 = TimeNow();
-    // auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1);
-    // cout << "[Layer 1] ReLU elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // for (size_t ch = 0; ch < ct_relu1.size(); ++ch) {
-    // std::cout << "[ReLU1] ch " << ch << " - Level: " << ct_relu1[ch]->GetLevel()
-    //           << ", Scale: " << ct_relu1[ch]->GetScalingFactor() << std::endl;
-    // }
+    t0 = TimeNow();
+    auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1);
+    cout << "[Layer 1] ReLU elapsed: " << TimeNow() - t0 << " sec" << endl;
+    for (size_t ch = 0; ch < ct_relu1.size(); ++ch) {
+    std::cout << "[ReLU1] ch " << ch << " - Level: " << ct_relu1[ch]->GetLevel()
+              << ", Scale: " << ct_relu1[ch]->GetScalingFactor() << std::endl;
+    }
 
-    // std::cout << "ct_relu1.size():" << ct_relu1.size() << " ct_conv1.size():" << ct_conv1.size() << std::endl;
+    std::cout << "ct_relu1.size():" << ct_relu1.size() << " ct_conv1.size():" << ct_conv1.size() << std::endl;
 
     // DEBUGGING AREA
     // size_t outH = 28, outW = 28;  // Conv1 출력 크기 기준
 
-    // for (size_t ch = 0; ch < ct_relu1.size(); ++ch) {
-    //     Plaintext pt;
-    //     cc->Decrypt(keys.secretKey, ct_relu1[ch], &pt);
-    //     pt->SetLength(outH * outW);
-    //     auto vec = pt->GetRealPackedValue();
+    for (size_t ch = 0; ch < ct_relu1.size(); ++ch) {
+        Plaintext pt;
+        cc->Decrypt(keys.secretKey, ct_relu1[ch], &pt);
+        pt->SetLength(outH * outW);
+        auto vec = pt->GetRealPackedValue();
 
-    //     std::string filename = "conv1_output_channel_" + std::to_string(ch) + "_b4_avgpool.txt";
-    //     std::ofstream out(filename);
-    //     out << std::fixed << std::setprecision(8);
+        std::string filename = "conv1_output_channel_" + std::to_string(ch) + "_b4_avgpool.txt";
+        std::ofstream out(filename);
+        out << std::fixed << std::setprecision(8);
 
-    //     for (size_t i = 0; i < outH; i++) {
-    //         for (size_t j = 0; j < outW; j++) {
-    //             out << vec[i * outW + j];
-    //             if (j < outW - 1) out << ",\n";
-    //         }
-    //         out << "\n";
-    //     }
-    //     std::cout << "Relu1 Results are " << ch << " saved to " << filename << std::endl;
-    // }
+        for (size_t i = 0; i < outH; i++) {
+            for (size_t j = 0; j < outW; j++) {
+                out << vec[i * outW + j];
+                if (j < outW - 1) out << ",\n";
+            }
+            out << "\n";
+        }
+        std::cout << "Relu1 Results are " << ch << " saved to " << filename << std::endl;
+    }
 
-    // auto rot1 = GenerateRotationIndices(2, 2, 32);
-    // cc->EvalRotateKeyGen(keys.secretKey, rot1);
-    // t0 = TimeNow();
-    // auto ct_pool1 = AvgPool2D_MultiChannel(cc, ct_relu1, 32, 32, keys.publicKey, rot1);
-    // cout << "[Layer 1] AvgPool elapsed: " << TimeNow() - t0 << " sec" << endl;
+    auto rot1 = GenerateRotationIndices(2, 2, 32);
+    cc->EvalRotateKeyGen(keys.secretKey, rot1);
+    t0 = TimeNow();
+    auto ct_pool1 = AvgPool2D_MultiChannel(cc, ct_relu1, 32, 32, keys.publicKey, rot1);
+    cout << "[Layer 1] AvgPool elapsed: " << TimeNow() - t0 << " sec" << endl;
 
-    // size_t outH = 14, outW = 14;
-    // for (size_t ch = 0; ch < ct_pool1.size(); ++ch) {
-    //     Plaintext pt;
-    //     cc->Decrypt(keys.secretKey, ct_pool1[ch], &pt);
-    //     pt->SetLength(outH * outW);
-    //     auto vec = pt->GetRealPackedValue();
+    size_t outH_pool = 14, outW_pool = 14;
+    for (size_t ch = 0; ch < ct_pool1.size(); ++ch) {
+        Plaintext pt;
+        cc->Decrypt(keys.secretKey, ct_pool1[ch], &pt);
+        pt->SetLength(outH_pool * outW_pool);
+        auto vec = pt->GetRealPackedValue();
 
-    //     ofstream out("openfhe_output_conv1_ch" + to_string(ch) + ".txt");
-    //     for (size_t i = 0; i < outH; ++i) {
-    //         for (size_t j = 0; j < outW; ++j) {
-    //             out << fixed << setprecision(8) << vec[i * outW + j];
-    //             if (j < outW - 1) out << ",\n";
-    //         }
-    //         out << "\n";
-    //     }
-    // }
+        ofstream out("openfhe_output_conv1_ch" + to_string(ch) + ".txt");
+        for (size_t i = 0; i < outH_pool; ++i) {
+            for (size_t j = 0; j < outW_pool; ++j) {
+                out << fixed << setprecision(8) << vec[i * outW_pool + j];
+                if (j < outW_pool - 1) out << ",\n";
+            }
+            out << "\n";
+        }
+    }
 
     cout << "[LeNet-5 with OpenFHE] Forward Pass Completed and Output Saved." << endl;
     return 0;
