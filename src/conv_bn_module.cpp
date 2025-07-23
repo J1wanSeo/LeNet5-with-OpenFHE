@@ -53,7 +53,7 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
             std::vector<double> mask(slotCount, 0.0);
             for (size_t i = 0; i < outH; i++) {
                 for (size_t j = 0; j < outW; j++) {
-                    size_t padded_idx = i * outW + j;
+                    size_t padded_idx = rotAmount + i * outW + j;
                     if (padded_idx < slotCount) {
                         mask[padded_idx] = 1.0;
                     }
@@ -62,19 +62,20 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
 
             auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
             auto masked_rotated = cc->EvalMult(rotated, pt_mask);
+            masked_rotated = cc->Rescale(masked_rotated);
             auto ct_weighted = cc->EvalMult(masked_rotated, filter[idx]);
+            ct_weighted = cc->Rescale(ct_weighted);
 
             partials.push_back(ct_weighted);
         }
     }
     Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
 
-    // ADDED: Add bias to the result
-    // The bias is added to every relevant output slot.
+    // Bias Addition
     std::vector<double> bias_vector(slotCount, 0.0);
     for (size_t i = 0; i < outH; ++i) {
         for (size_t j = 0; j < outW; ++j) {
-            size_t padded_idx = i * inputW + j;
+            size_t padded_idx = i * outW + j;
             if (padded_idx < slotCount) {
                 bias_vector[padded_idx] = bias;
             }
@@ -102,7 +103,7 @@ Ciphertext<DCRTPoly> GeneralBatchNorm_CKKS(
     auto pt_b = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, b));
     
     auto scaled_mul = cc->EvalMult(ct_input, pt_a);
-    // scaled_mul = cc->Rescale(scaled_mul);
+    scaled_mul = cc->Rescale(scaled_mul);
     return cc->EvalAdd(scaled_mul, pt_b);
 
 }
@@ -162,7 +163,7 @@ Ciphertext<DCRTPoly> ApproxReLU4(CryptoContext<DCRTPoly> cc, const Ciphertext<DC
     auto pt_half    = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.5));
     auto pt_coeff2  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.204875));
     auto pt_coeff4  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, -0.0063896));
-    // auto pt_const   = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
+    auto pt_const   = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
 
     auto x1 = cc->EvalMult(ct_x, pt_half);
     auto x2_raw = cc->EvalMult(ct_x, ct_x);
@@ -172,10 +173,10 @@ Ciphertext<DCRTPoly> ApproxReLU4(CryptoContext<DCRTPoly> cc, const Ciphertext<DC
 
     auto sum = cc->EvalAdd(x1, x2);
     sum = cc->EvalAdd(sum, x4);
-    auto pt_const = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
+    // auto pt_const = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
 
     // EvalAdd 전에 level 로그 찍기
-    std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
+    // std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
 
     // EvalAdd
     auto result = cc->EvalAdd(sum, pt_const);

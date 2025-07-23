@@ -52,6 +52,9 @@ else()
     link_libraries(${OpenFHE_SHARED_LIBRARIES})
 endif()
 
+# include 디렉토리 추가
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
 ### ADD YOUR EXECUTABLE(s) HERE
 ### add_executable(EXECUTABLE-NAME SOURCES)
 ###
@@ -59,6 +62,10 @@ endif()
 ### add_executable(fc_test matrix_vector_mult.cpp)
 ### add_executable(conv_test conv_layer_full_bn.cpp)
 add_executable(conv_bn_exec
-    main.cpp
-    conv_bn_module.cpp
+    src/main.cpp
+    src/conv_bn_module.cpp
 )
+### add_executable(fc_test 
+###    src/fc_layer.cpp
+###    src/conv_bn_module.cpp
+###)

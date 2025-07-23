@@ -1,3 +1,3 @@
-/home/jwseo/openfhe_LeNet-5/build/CMakeFiles/conv_bn_exec.dir
-/home/jwseo/openfhe_LeNet-5/build/CMakeFiles/edit_cache.dir
-/home/jwseo/openfhe_LeNet-5/build/CMakeFiles/rebuild_cache.dir
+/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles/conv_bn_exec.dir
+/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles/edit_cache.dir
+/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles/rebuild_cache.dir
