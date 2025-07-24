@@ -43,7 +43,7 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
     size_t outW = (inputW - filterW) / stride + 1;
 
     std::vector<Ciphertext<DCRTPoly>> partials;
-
+    std::vector<double> bias_vector(slotCount, 0.0);
     for (size_t dy = 0; dy < filterH; dy++) {
         for (size_t dx = 0; dx < filterW; dx++) {
             size_t idx = dy * filterW + dx;
@@ -51,12 +51,15 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
             auto rotated = cc->EvalRotate(ct_input, rotAmount);
 
             std::vector<double> mask(slotCount, 0.0);
+            
+
             for (size_t i = 0; i < outH; i++) {
                 for (size_t j = 0; j < outW; j++) {
-                    size_t padded_idx = (i * stride + dy) * inputW + (j * stride + dx);
-                    if (padded_idx < slotCount) {
-                        mask[padded_idx] = 1.0;
-                    }
+                    size_t output_slot = i * inputW + j;  // compact 저장
+                    if (output_slot < slotCount) {
+                        mask[output_slot] = 1.0;
+                        bias_vector[output_slot] = bias;
+                    }                    
                 }
             }
 
@@ -70,17 +73,7 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
         }
     }
     Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
-
-    // Bias Addition
-    std::vector<double> bias_vector(slotCount, 0.0);
-    for (size_t i = 0; i < outH; i++) {
-        for (size_t j = 0; j < outW; j++) {
-            size_t padded_idx = i * outW + j;
-            if (padded_idx < slotCount) {
-                bias_vector[padded_idx] = bias;
-            }
-        }
-    }
+   
     auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vector);
     result = cc->EvalAdd(result, pt_bias);
 
@@ -134,6 +127,9 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     auto betas   = LoadFromTxt(betaPath);
     auto means   = LoadFromTxt(meanPath);
     auto vars    = LoadFromTxt(varPath);
+
+    // size_t outH = (inputH - filterH) / stride + 1;
+    // size_t outW = (inputW - filterW) / stride + 1;
 
     std::vector<Ciphertext<DCRTPoly>> outputs;
     auto rotIndices = GenerateRotationIndices(filterH, filterW, inputW);
@@ -208,29 +204,34 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
 
     std::vector<Ciphertext<DCRTPoly>> pooled;
     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
-    size_t outH = inputH / 2;
-    size_t outW = inputW / 2;
+
+    // 유효한 영역만 (28x28)
+    size_t effectiveH = 28;
+    size_t effectiveW = 28;
 
     for (const auto& ct : ct_channels) {
         std::vector<Ciphertext<DCRTPoly>> partials;
 
-        for (size_t dy = 0; dy < 2; dy++) {
-            for (size_t dx = 0; dx < 2; dx++) {
+        for (size_t dy = 0; dy < 2; ++dy) {
+            for (size_t dx = 0; dx < 2; ++dx) {
                 int rot = dy * inputW + dx;
                 auto rotated = cc->EvalRotate(ct, rot);
 
                 std::vector<double> mask(slotCount, 0.0);
-                for (size_t i = 0; i < outH; ++i) {
-                    for (size_t j = 0; j < outW; ++j) {
-                        size_t idx = (i * 2 + dy) * inputW + (j * 2 + dx);
-                        if (idx < slotCount)
-                            mask[idx] = 0.25;  // 4개 평균
+
+                for (size_t i = 0; i < effectiveH / 2 + 1; ++i) {
+                    for (size_t j = 0; j < effectiveW / 2 + 1; ++j) {
+                        size_t y = i * 2 + dy;
+                        size_t x = j * 2 + dx;
+                        size_t idx = y * inputW + x;
+                        if (idx < slotCount) {
+                            mask[idx] = 0.25;
+                        }
                     }
                 }
 
                 auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
                 auto masked = cc->EvalMult(rotated, pt_mask);
-                // masked = cc->Rescale(masked);
                 partials.push_back(masked);
             }
         }
@@ -241,3 +242,5 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
 
     return pooled;
 }
+
+

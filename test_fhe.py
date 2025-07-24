@@ -44,7 +44,8 @@ def approx_relu4(x):
 
 # ==== 4. Forward Pass ====
 with torch.no_grad():
-    x_bn = bn1(conv1(input_tensor))      # Conv + BN
+    x = conv1(input_tensor)
+    x_bn = bn1(x)      # Conv + BN
     x_relu = approx_relu4(x_bn)          # ApproxReLU4
 
     # Optional 이후 처리:
@@ -55,6 +56,13 @@ out_path = "./results/"
 os.makedirs(out_path, exist_ok=True)
 
 # 저장 ①: b4 ReLU
+for ch in range(6):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_bn.txt"),
+        x_bn[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+
 for ch in range(6):
     np.savetxt(
         os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_relu.txt"),
