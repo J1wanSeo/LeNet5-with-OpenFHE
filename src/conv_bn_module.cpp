@@ -55,7 +55,7 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
 
             for (size_t i = 0; i < outH; i++) {
                 for (size_t j = 0; j < outW; j++) {
-                    size_t output_slot = i * inputW + j;  // compact 저장
+                    size_t output_slot = i * inputW + j;
                     if (output_slot < slotCount) {
                         mask[output_slot] = 1.0;
                         bias_vector[output_slot] = bias;
@@ -153,47 +153,47 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     return outputs;
 }
 
-Ciphertext<DCRTPoly> ApproxReLU4(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
-    size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
+// Ciphertext<DCRTPoly> ApproxReLU4(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
+//     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
 
-    auto pt_half    = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.5));
-    auto pt_coeff2  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.204875));
-    auto pt_coeff4  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, -0.0063896));
-    auto pt_const   = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
+//     auto pt_half    = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.5));
+//     auto pt_coeff2  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.204875));
+//     auto pt_coeff4  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, -0.0063896));
+//     auto pt_const   = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
 
-    auto x1 = cc->EvalMult(ct_x, pt_half);
-    auto x2_raw = cc->EvalMult(ct_x, ct_x);
-    auto x2 = cc->EvalMult(x2_raw, pt_coeff2);
-    auto x4_raw = cc->EvalMult(x2_raw, x2_raw);
-    auto x4 = cc->EvalMult(x4_raw, pt_coeff4);
+//     auto x1 = cc->EvalMult(ct_x, pt_half);
+//     auto x2_raw = cc->EvalMult(ct_x, ct_x);
+//     auto x2 = cc->EvalMult(x2_raw, pt_coeff2);
+//     auto x4_raw = cc->EvalMult(x2_raw, x2_raw);
+//     auto x4 = cc->EvalMult(x4_raw, pt_coeff4);
 
-    auto sum = cc->EvalAdd(x1, x2);
-    sum = cc->EvalAdd(sum, x4);
-    // auto pt_const = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
+//     auto sum = cc->EvalAdd(x1, x2);
+//     sum = cc->EvalAdd(sum, x4);
+//     // auto pt_const = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
 
-    // EvalAdd 전에 level 로그 찍기
-    // std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
+//     // EvalAdd 전에 level 로그 찍기
+//     // std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
 
-    // EvalAdd
-    auto result = cc->EvalAdd(sum, pt_const);
-    return result;
-}
-
-
+//     // EvalAdd
+//     auto result = cc->EvalAdd(sum, pt_const);
+//     return result;
+// }
 
 
 
-std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
-    CryptoContext<DCRTPoly> cc,
-    const std::vector<Ciphertext<DCRTPoly>>& ct_channels) {
 
-    std::vector<Ciphertext<DCRTPoly>> activated;
-    for (auto& ct : ct_channels) {
-        std::cout << "[RELU] Level: " << ct->GetLevel() << ", Scale: " << ct->GetScalingFactor() << std::endl;
-        activated.push_back(ApproxReLU4(cc, ct));
-    }
-    return activated;
-}
+
+// std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
+//     CryptoContext<DCRTPoly> cc,
+//     const std::vector<Ciphertext<DCRTPoly>>& ct_channels) {
+
+//     std::vector<Ciphertext<DCRTPoly>> activated;
+//     for (auto& ct : ct_channels) {
+//         std::cout << "[RELU] Level: " << ct->GetLevel() << ", Scale: " << ct->GetScalingFactor() << std::endl;
+//         activated.push_back(ApproxReLU4(cc, ct));
+//     }
+//     return activated;
+// }
 
 std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
     CryptoContext<DCRTPoly> cc,
@@ -206,8 +206,8 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
 
     // 유효한 영역만 (28x28)
-    size_t effectiveH = 28;
-    size_t effectiveW = 28;
+    // size_t effectiveH = 28;
+    // size_t effectiveW = 28;
 
     for (const auto& ct : ct_channels) {
         std::vector<Ciphertext<DCRTPoly>> partials;
@@ -219,16 +219,17 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
 
                 std::vector<double> mask(slotCount, 0.0);
 
-                for (size_t i = 0; i < effectiveH / 2 + 1; ++i) {
-                    for (size_t j = 0; j < effectiveW / 2 + 1; ++j) {
-                        size_t y = i * 2 + dy;
-                        size_t x = j * 2 + dx;
-                        size_t idx = y * inputW + x;
-                        if (idx < slotCount) {
+                for (size_t i = 0; i < 14; ++i) {
+                    for (size_t j = 0; j < 14; ++j) {
+                        size_t y = i*2 + dy;
+                        size_t x = j*2 + dx;
+                        if (y < 28 && x < 28) {
+                            size_t idx = y * inputW + x;
                             mask[idx] = 0.25;
                         }
                     }
                 }
+                
 
                 auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
                 auto masked = cc->EvalMult(rotated, pt_mask);

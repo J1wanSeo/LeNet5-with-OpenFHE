@@ -1,5 +1,5 @@
-CMakeFiles/conv_bn_exec.dir/src/main.cpp.o: \
-  /home/ubuntu/LeNet5-with-OpenFHE/src/main.cpp \
+CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o: \
+  /home/ubuntu/LeNet5-with-OpenFHE/src/relu.cpp \
   /home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.h \
   /usr/local/include/openfhe/pke/openfhe.h \
   /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/initializer_list \

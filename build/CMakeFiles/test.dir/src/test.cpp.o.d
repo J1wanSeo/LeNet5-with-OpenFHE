@@ -1,6 +1,5 @@
-CMakeFiles/conv_bn_exec.dir/src/main.cpp.o: \
-  /home/ubuntu/LeNet5-with-OpenFHE/src/main.cpp \
-  /home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.h \
+CMakeFiles/test.dir/src/test.cpp.o: \
+  /home/ubuntu/LeNet5-with-OpenFHE/src/test.cpp \
   /usr/local/include/openfhe/pke/openfhe.h \
   /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/initializer_list \
   /usr/bin/../lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11/bits/c++config.h \
@@ -536,4 +535,4 @@ CMakeFiles/conv_bn_exec.dir/src/main.cpp.o: \
   /usr/local/include/openfhe/pke/scheme/bgvrns/gen-cryptocontext-bgvrns.h \
   /usr/local/include/openfhe/pke/scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h \
   /usr/local/include/openfhe/pke/scheme/bgvrns/gen-cryptocontext-bgvrns-params.h \
-  /home/ubuntu/LeNet5-with-OpenFHE/src/relu.h
+  /home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.h

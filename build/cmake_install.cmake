@@ -1,4 +1,4 @@
-# Install script for directory: /home/jwseo/openfhe_LeNet-5
+# Install script for directory: /home/ubuntu/LeNet5-with-OpenFHE
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/jwseo/openfhe_LeNet-5/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/ubuntu/LeNet5-with-OpenFHE/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

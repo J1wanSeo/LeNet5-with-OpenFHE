@@ -43,12 +43,12 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     const PublicKey<DCRTPoly>& publicKey,
     const PrivateKey<DCRTPoly>& secretKey);
 
-// Approximate ReLU (채널 전체 적용)
-std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
-    CryptoContext<DCRTPoly> cc,
-    const std::vector<Ciphertext<DCRTPoly>>& ct_channels);
+// // Approximate ReLU (채널 전체 적용)
+// std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
+//     CryptoContext<DCRTPoly> cc,
+//     const std::vector<Ciphertext<DCRTPoly>>& ct_channels);
 
-// Average Pooling (2x2 stride=2), multi-channel
+// Average Pooling 
 std::vector<Ciphertext<DCRTPoly>> AvgPool2D_MultiChannel(
     CryptoContext<DCRTPoly> cc,
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,

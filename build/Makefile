@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jwseo/openfhe_LeNet-5
+CMAKE_SOURCE_DIR = /home/ubuntu/LeNet5-with-OpenFHE
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jwseo/openfhe_LeNet-5/build
+CMAKE_BINARY_DIR = /home/ubuntu/LeNet5-with-OpenFHE/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jwseo/openfhe_LeNet-5/build/CMakeFiles /home/jwseo/openfhe_LeNet-5/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles /home/ubuntu/LeNet5-with-OpenFHE/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jwseo/openfhe_LeNet-5/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -129,12 +129,26 @@ conv_bn_exec/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/build
 .PHONY : conv_bn_exec/fast
 
+#=============================================================================
+# Target rules for targets named test
+
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
+.PHONY : test
+
+# fast build rule for target.
+test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
+.PHONY : test/fast
+
 src/conv_bn_module.o: src/conv_bn_module.cpp.o
 .PHONY : src/conv_bn_module.o
 
 # target to build an object file
 src/conv_bn_module.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/conv_bn_module.cpp.o
 .PHONY : src/conv_bn_module.cpp.o
 
 src/conv_bn_module.i: src/conv_bn_module.cpp.i
@@ -143,6 +157,7 @@ src/conv_bn_module.i: src/conv_bn_module.cpp.i
 # target to preprocess a source file
 src/conv_bn_module.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/conv_bn_module.cpp.i
 .PHONY : src/conv_bn_module.cpp.i
 
 src/conv_bn_module.s: src/conv_bn_module.cpp.s
@@ -151,6 +166,7 @@ src/conv_bn_module.s: src/conv_bn_module.cpp.s
 # target to generate assembly for a file
 src/conv_bn_module.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/conv_bn_module.cpp.s
 .PHONY : src/conv_bn_module.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -177,6 +193,54 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/relu.o: src/relu.cpp.o
+.PHONY : src/relu.o
+
+# target to build an object file
+src/relu.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o
+.PHONY : src/relu.cpp.o
+
+src/relu.i: src/relu.cpp.i
+.PHONY : src/relu.i
+
+# target to preprocess a source file
+src/relu.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.i
+.PHONY : src/relu.cpp.i
+
+src/relu.s: src/relu.cpp.s
+.PHONY : src/relu.s
+
+# target to generate assembly for a file
+src/relu.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s
+.PHONY : src/relu.cpp.s
+
+src/test.o: src/test.cpp.o
+.PHONY : src/test.o
+
+# target to build an object file
+src/test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.o
+.PHONY : src/test.cpp.o
+
+src/test.i: src/test.cpp.i
+.PHONY : src/test.i
+
+# target to preprocess a source file
+src/test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.i
+.PHONY : src/test.cpp.i
+
+src/test.s: src/test.cpp.s
+.PHONY : src/test.s
+
+# target to generate assembly for a file
+src/test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.s
+.PHONY : src/test.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -186,12 +250,19 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... conv_bn_exec"
+	@echo "... test"
 	@echo "... src/conv_bn_module.o"
 	@echo "... src/conv_bn_module.i"
 	@echo "... src/conv_bn_module.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/relu.o"
+	@echo "... src/relu.i"
+	@echo "... src/relu.s"
+	@echo "... src/test.o"
+	@echo "... src/test.i"
+	@echo "... src/test.s"
 .PHONY : help
 
 

@@ -9,7 +9,7 @@ def load_txt_tensor(path, shape):
         data = [float(x) for x in tokens]
     return torch.tensor(data, dtype=torch.float32).view(*shape)
 
-# ==== 1. Load Input & Parameters ====
+
 # input_image = torch.rand(1, 1, 32, 32, dtype=torch.float32).view(1, 1, 32, 32)
 # np.savetxt("./lenet_weights_epoch(10)/input_image.txt", input_image.view(1, -1).numpy(), delimiter=",")
 
@@ -25,7 +25,7 @@ mean1   = load_txt_tensor(f"{base_path}/conv1_bn_mean.txt", (6,))
 var1    = load_txt_tensor(f"{base_path}/conv1_bn_var.txt", (6,))
 
 
-# ==== 2. Define Layers ====
+
 conv1 = torch.nn.Conv2d(1, 6, 5, stride=1, bias=True)
 conv1.weight.data = weight1
 conv1.bias.data = bias1
@@ -38,24 +38,23 @@ bn1.running_var = var1
 bn1.eval()
 
 
-# ==== 3. Polynomial Approximate ReLU ====
 def approx_relu4(x):
     return 0.234606 + 0.5 * x + 0.204875 * x**2 - 0.0063896 * x**4
 
-# ==== 4. Forward Pass ====
+
 with torch.no_grad():
     x = conv1(input_tensor)
-    x_bn = bn1(x)      # Conv + BN
-    x_relu = approx_relu4(x_bn)          # ApproxReLU4
+    x_bn = bn1(x)      
+    x_relu = approx_relu4(x_bn)          
 
-    # Optional 이후 처리:
+    
     x_pool = torch.nn.functional.avg_pool2d(x_relu, kernel_size=2, stride=2)
 
-# ==== 5. Save Output ====
+
 out_path = "./results/"
 os.makedirs(out_path, exist_ok=True)
 
-# 저장 ①: b4 ReLU
+
 for ch in range(6):
     np.savetxt(
         os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_bn.txt"),
@@ -70,7 +69,6 @@ for ch in range(6):
         delimiter=","
     )
 
-# 저장 ②: b4 AvgPool
 for ch in range(6):
     np.savetxt(
         os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_avgpool.txt"),

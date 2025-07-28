@@ -1,5 +1,6 @@
 // main.cpp
 #include "conv_bn_module.h"
+#include "relu.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -55,6 +56,8 @@ int main() {
     auto ct_conv1 = ConvBnLayer(cc, ct_input_channels, path, 32, 32, 5, 5, 1, 1, 6, 1, keys.publicKey, keys.secretKey);
 
     cout << "[Layer 1] Conv+BN elapsed: " << TimeNow() - t0 << " sec" << endl;
+
+
     // for (size_t ch = 0; ch < ct_conv1.size(); ++ch) {
     // std::cout << "[Conv1] ch " << ch << " - Level: " << ct_conv1[ch]->GetLevel()
     //           << ", Scale: " << ct_conv1[ch]->GetScalingFactor() << std::endl;
@@ -84,7 +87,8 @@ int main() {
 
     t0 = TimeNow();
 
-    auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1);
+    int mode = 2;
+    auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1, mode);
 
     cout << "[Layer 1] ReLU elapsed: " << TimeNow() - t0 << " sec" << endl;
 
