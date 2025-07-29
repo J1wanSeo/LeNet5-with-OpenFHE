@@ -23,12 +23,22 @@ gamma1  = load_txt_tensor(f"{base_path}/conv1_bn_gamma.txt", (6,))
 beta1   = load_txt_tensor(f"{base_path}/conv1_bn_beta.txt", (6,))
 mean1   = load_txt_tensor(f"{base_path}/conv1_bn_mean.txt", (6,))
 var1    = load_txt_tensor(f"{base_path}/conv1_bn_var.txt", (6,))
-
+# conv2
+weight2 = load_txt_tensor(f"{base_path}/conv2_weight.txt", (16, 6, 5, 5))
+bias2   = load_txt_tensor(f"{base_path}/conv2_bias.txt", (16,))
+gamma2  = load_txt_tensor(f"{base_path}/conv2_bn_gamma.txt", (16,))
+beta2   = load_txt_tensor(f"{base_path}/conv2_bn_beta.txt", (16,))
+mean2   = load_txt_tensor(f"{base_path}/conv2_bn_mean.txt", (16,))
+var2    = load_txt_tensor(f"{base_path}/conv2_bn_var.txt", (16,))
 
 
 conv1 = torch.nn.Conv2d(1, 6, 5, stride=1, bias=True)
 conv1.weight.data = weight1
 conv1.bias.data = bias1
+
+conv2 = torch.nn.Conv2d(6, 16, 5, stride=1, bias=True)
+conv2.weight.data = weight2
+conv2.bias.data = bias2
 
 bn1 = torch.nn.BatchNorm2d(6)
 bn1.weight.data = gamma1
@@ -36,6 +46,13 @@ bn1.bias.data = beta1
 bn1.running_mean = mean1
 bn1.running_var = var1
 bn1.eval()
+
+bn2 = torch.nn.BatchNorm2d(16)
+bn2.weight.data = gamma2
+bn2.bias.data = beta2
+bn2.running_mean = mean2
+bn2.running_var = var2
+bn2.eval()
 
 
 def approx_relu4(x):
@@ -47,8 +64,14 @@ with torch.no_grad():
     x_bn = bn1(x)      
     x_relu = approx_relu4(x_bn)          
 
-    
+
     x_pool = torch.nn.functional.avg_pool2d(x_relu, kernel_size=2, stride=2)
+
+    x_conv2 = conv2(x_pool)
+    x_bn2 = bn2(x_conv2)
+    x_relu2 = approx_relu4(x_bn2)
+
+    x_pool2 = torch.nn.functional.avg_pool2d(x_relu2, kernel_size=2, stride=2)
 
 
 out_path = "./results/"
@@ -79,5 +102,33 @@ for ch in range(6):
     np.savetxt(
         os.path.join(out_path, f"py_conv1_output_channel_{ch}.txt"),
         x_pool[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+
+for ch in range(16):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv2_output_channel_{ch}_b4_bn.txt"),
+        x_bn2[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+
+for ch in range(16):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv2_output_channel_{ch}_b4_relu.txt"),
+        x_bn2[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+
+for ch in range(16):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv2_output_channel_{ch}_b4_avgpool.txt"),
+        x_relu2[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+
+for ch in range(16):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv2_output_channel_{ch}.txt"),
+        x_pool2[0, ch].view(-1).numpy(),
         delimiter=","
     )

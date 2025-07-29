@@ -1,107 +1,132 @@
-#include "openfhe.h"
+#include "fc_layer.h"
+#include "conv_bn_module.h"
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 #include <iostream>
-#include <vector>
-
-using namespace lbcrypto;
-
-std::vector<std::vector<double>> RowMajorToDiagonal(
-    const std::vector<double>& weight,
-    size_t fc_out_dim,
-    size_t fc_in_dim)
-{
-    std::vector<std::vector<double>> diagonals(fc_in_dim, std::vector<double>(fc_out_dim, 0.0));
-    for (size_t k = 0; k < fc_in_dim; k++) {
-        for (size_t i = 0; i < fc_out_dim; i++) {
-            size_t slotIdx = (i + k) % fc_out_dim;
-            diagonals[k][slotIdx] = weight[i * fc_in_dim + k];
-        }
-    }
-    return diagonals;
-}
 
 
-int main() {
-    CCParams<CryptoContextCKKSRNS> params;
-    params.SetRingDim(1 << 14);
-    params.SetScalingModSize(40);
-    params.SetBatchSize(4096);
-    params.SetMultiplicativeDepth(5);
-    params.SetScalingTechnique(FLEXIBLEAUTO);
-
-    CryptoContext<DCRTPoly> cc = GenCryptoContext(params);
-    cc->Enable(PKE);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-
-    auto keys = cc->KeyGen();
-    cc->EvalMultKeyGen(keys.secretKey);
-
-    // Rotation key: input_dim만큼 생성
-    size_t fc_in_dim = 20, fc_out_dim = 5;
-    std::vector<int> rotKeys;
-    for (size_t k = 1; k < fc_in_dim; ++k)
-        rotKeys.push_back(k);
-    cc->EvalAtIndexKeyGen(keys.secretKey, rotKeys);
-
-    // 입력 (1~20)
-    std::vector<double> x(fc_in_dim);
-    for (size_t i = 0; i < fc_in_dim; i++)
-        x[i] = i + 1;
-
-    auto pt_x = cc->MakeCKKSPackedPlaintext(x);
-    auto ct_x = cc->Encrypt(keys.publicKey, pt_x);
-
-    // Weight, bias (테스트용)
-    std::vector<double> weights(fc_out_dim * fc_in_dim);
-    std::vector<double> bias(fc_out_dim, 0.0);
-    for (size_t i = 0; i < fc_out_dim * fc_in_dim; i++)
-        weights[i] = i * 0.1;
-
-    size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
+// 일반적인 FC Layer (한 번에 out_dim 크기까지 합침)
+Ciphertext<DCRTPoly> GeneralFC_CKKS(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_input,
+    const std::string& pathPrefix,
+    size_t in_dim, size_t out_dim,
+    size_t layerIndex,
+    const PublicKey<DCRTPoly>& pk) {
 
     Ciphertext<DCRTPoly> ct_output;
 
-    for (size_t k = 0; k < fc_in_dim; k++) {
-        auto ct_rot = (k == 0) ? ct_x : cc->EvalRotate(ct_x, k);
-        std::vector<double> diag(slotCount, 0.0);
-        for (size_t i = 0; i < fc_out_dim; i++)
-            diag[(i + k) % slotCount] = weights[i * fc_in_dim + k];
-    
-        auto pt_diag = cc->MakeCKKSPackedPlaintext(diag);
-        auto ct_mul = cc->EvalMult(ct_rot, pt_diag);
-        cc->ModReduceInPlace(ct_mul);
-    
-        if (!ct_output)
-            ct_output = ct_mul;
-        else {
-            while (ct_output->GetLevel() > ct_mul->GetLevel())
-                cc->ModReduceInPlace(ct_output);
-            while (ct_output->GetLevel() < ct_mul->GetLevel())
-                cc->ModReduceInPlace(ct_mul);
-            ct_output = cc->EvalAdd(ct_output, ct_mul);
+    std::string layerPrefix = "fc" + std::to_string(layerIndex);
+    auto filterPath = pathPrefix + "/" + layerPrefix + "_weight.txt";
+    auto biasPath   = pathPrefix + "/" + layerPrefix + "_bias.txt";
+    auto gammaPath  = pathPrefix + "/" + layerPrefix + "_bn_gamma.txt";
+    auto betaPath   = pathPrefix + "/" + layerPrefix + "_bn_beta.txt";
+    auto meanPath   = pathPrefix + "/" + layerPrefix + "_bn_mean.txt";
+    auto varPath    = pathPrefix + "/" + layerPrefix + "_bn_var.txt";
+
+    auto weights = LoadFromTxt(filterPath);
+    auto bias  = LoadFromTxt(biasPath);
+    auto gammas  = LoadFromTxt(gammaPath);
+    auto betas   = LoadFromTxt(betaPath);
+    auto means   = LoadFromTxt(meanPath);
+    auto vars    = LoadFromTxt(varPath);
+
+    for (size_t i = 0; i < out_dim; i++) {
+        std::vector<double> w_i(weights.begin() + i * in_dim, weights.begin() + (i + 1) * in_dim);
+
+        auto pt_w = cc->MakeCKKSPackedPlaintext(w_i);
+        auto ct_mult = cc->EvalMult(ct_input, pt_w);
+        ct_mult = cc->Rescale(ct_mult);
+
+        // summation (내적, 계수 shift 방식)
+        for (size_t k = 1; k < in_dim; k <<= 1) {
+            auto rotated = cc->EvalRotate(ct_mult, k);
+            ct_mult = cc->EvalAdd(ct_mult, rotated);
         }
+
+        // bias 추가
+        std::vector<double> bias_vec(cc->GetEncodingParams()->GetBatchSize(), bias[i]);
+        auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vec);
+        auto ct_neuron = cc->EvalAdd(ct_mult, pt_bias);
+
+        auto ct_fc_bn = GeneralBatchNorm_CKKS(cc, ct_neuron, gammas[i], betas[i], means[i], vars[i], cc->GetEncodingParams()->GetBatchSize());
+
+        // i번째 위치로 shift
+        auto ct_shifted = cc->EvalRotate(ct_fc_bn, -(int)i);
+        ct_shifted = cc->Rescale(ct_shifted);   
+
+        std::vector<double> mask(cc->GetEncodingParams()->GetBatchSize(), 0.0);
+        mask[i] = 1.0;
+        auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
+        ct_shifted = cc->EvalMult(ct_shifted, pt_mask);
+        ct_shifted = cc->Rescale(ct_shifted);
+
+        ct_output = (i == 0) ? ct_shifted : cc->EvalAdd(ct_output, ct_shifted);
     }
-    
-    // bias는 slot 0~4만 (나머지 0)
-    std::vector<double> bias_vec(slotCount, 0.0);
-    for (size_t i = 0; i < fc_out_dim; i++)
-        bias_vec[i] = bias[i];
-    
-    auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vec);
-    pt_bias->SetScalingFactor(ct_output->GetScalingFactor());
-    ct_output = cc->EvalAdd(ct_output, pt_bias);
 
-
-
-
-    // 복호화 및 출력
-    lbcrypto::Plaintext pt;
-    cc->Decrypt(keys.secretKey, ct_output, &pt);
-    pt->SetLength(fc_out_dim);
-
-    auto result = pt->GetRealPackedValue();
-    std::cout << "[Diagonal FC output]:" << std::endl;
-    for (size_t i = 0; i < fc_out_dim; i++)
-        std::cout << "y[" << i << "] = " << result[i] << std::endl;
-    return 0;
+    return ct_output;
 }
+
+void SaveDecryptedFCOutput(
+    CryptoContext<DCRTPoly> cc,
+    const PrivateKey<DCRTPoly>& sk,
+    const Ciphertext<DCRTPoly>& ct_output,
+    size_t out_dim,
+    const std::string& filename) {
+
+    Plaintext pt;
+    cc->Decrypt(sk, ct_output, &pt);
+    pt->SetLength(out_dim);
+    auto vec = pt->GetRealPackedValue();
+
+    std::ofstream out(filename);
+    out << std::fixed << std::setprecision(8);
+
+    for (size_t i = 0; i < out_dim; i++) {
+        out << vec[i];
+        if (i < out_dim - 1) out << ",\n";
+    }
+    out.close();
+    std::cout << "[INFO] FC output saved: " << filename << std::endl;
+}
+
+
+// int main() {
+//     // ... context/키 생성 생략
+
+//     CCParams<CryptoContextCKKSRNS> params;
+//     params.SetRingDim(1 << 16);
+//     params.SetScalingModSize(40);
+//     params.SetBatchSize(4096);
+//     params.SetMultiplicativeDepth(20);
+//     params.SetScalingTechnique(FLEXIBLEAUTO);
+
+//     CryptoContext<DCRTPoly> cc = GenCryptoContext(params);
+//     cc->Enable(PKE);
+//     cc->Enable(LEVELEDSHE);
+//     cc->Enable(ADVANCEDSHE);
+
+//     auto keys = cc->KeyGen();
+//     cc->EvalMultKeyGen(keys.secretKey);
+
+//     std::string path = "../lenet_weights_epoch(10)";
+
+//     size_t fc_in_dim = 120;
+//     size_t fc_out_dim = 84;
+
+//     auto x = LoadFromTxt("../results/fc1_input.txt");
+//     Plaintext pt_x = cc->MakeCKKSPackedPlaintext(x);
+//     auto ct_x = cc->Encrypt(keys.publicKey, pt_x);
+
+//     // Rotation key는 in_dim, out_dim에 맞게 미리 셋업 (conv에서처럼 따로 빼도 무방)
+//     std::vector<int> rotIndices;
+//     for (size_t k = 1; k < fc_in_dim; k <<= 1) rotIndices.push_back(k);
+//     for (size_t i = 0; i < fc_out_dim; i++) rotIndices.push_back(-i);
+//     cc->EvalAtIndexKeyGen(keys.secretKey, rotIndices);
+
+//     auto ct_output = GeneralFC_CKKS(cc, ct_x, path, 120, 84, 1, keys.publicKey);
+
+//     SaveDecryptedFCOutput(cc, keys.secretKey, ct_output, 84, "fc1_output.txt");
+// }
+

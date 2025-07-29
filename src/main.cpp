@@ -1,7 +1,7 @@
 // main.cpp
 #include "conv_bn_module.h"
 #include "relu.h"
-// #include "fc_layer.h"
+#include "fc_layer.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -17,7 +17,7 @@ int main() {
     CCParams<CryptoContextCKKSRNS> params;
     params.SetRingDim(1 << 16);
     params.SetScalingModSize(40);
-    params.SetBatchSize(4096);
+    params.SetBatchSize(1 << 15);
     params.SetMultiplicativeDepth(20);
     params.SetScalingTechnique(FLEXIBLEAUTO);
 
@@ -89,19 +89,23 @@ int main() {
 
     auto ct_relu3 = ApplyApproxReLU4_All(cc, ct_conv3, mode);
 
-    // =======================
-    // Layer 4: Fully Connected 120->84
-    // =======================
-    auto ct_fc1 = FCLayer_CKKS(cc, ct_relu3, path, 120, 84,
-                               keys.publicKey, keys.secretKey, 1);
-    SaveDecryptedConvOutput(cc, keys.secretKey, {ct_fc1}, 1, 84, "fc1_output");
+    // // =======================
+    // // Layer 4: Flatten 4x4x120 -> 1920
+    // // =======================
+    // auto ct_flatten = Flatten_CKKS(cc, ct_relu3, 4, 4, 120);
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_flatten, 1, 1920, "flatten_output");
 
-    // =======================
-    // Layer 5: FC 84->10 (Output)
-    // =======================
-    auto ct_fc2 = FCLayer_CKKS(cc, {ct_fc1}, path, 84, 10,
-                               keys.publicKey, keys.secretKey, 2);
-    SaveDecryptedConvOutput(cc, keys.secretKey, {ct_fc2}, 1, 10, "fc2_output");
+    // // =======================
+    // // Layer 4: Fully Connected 120->84
+    // // =======================
+    // auto ct_fc1 = GeneralFC_CKKS(cc, ct_relu3, path, 120, 84, 1, keys.publicKey);
+    // SaveDecryptedConvOutput(cc, keys.secretKey, {ct_fc1}, 1, 84, "fc1_output");
+
+    // // =======================
+    // // Layer 5: FC 84->10 (Output)
+    // // =======================
+    // auto ct_fc2 = GeneralFC_CKKS(cc, {ct_fc1}, path, 84, 10, 2, keys.publicKey); // bn 없음 반영하기
+    // SaveDecryptedConvOutput(cc, keys.secretKey, {ct_fc2}, 1, 10, "fc2_output");
 
     cout << "[LeNet-5 with OpenFHE] Forward Pass Completed and Output Saved." << endl;
     return 0;

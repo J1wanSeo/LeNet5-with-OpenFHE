@@ -63,7 +63,7 @@ CMAKE_BINARY_DIR = /home/ubuntu/LeNet5-with-OpenFHE/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/fc_test.dir/all
+all: CMakeFiles/conv_bn_exec.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/fc_test.dir/clean
+clean: CMakeFiles/conv_bn_exec.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/fc_test.dir
+# Target rules for target CMakeFiles/conv_bn_exec.dir
 
 # All Build rule for target.
-CMakeFiles/fc_test.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=1,2,3 "Built target fc_test"
-.PHONY : CMakeFiles/fc_test.dir/all
+CMakeFiles/conv_bn_exec.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=1,2,3,4,5 "Built target conv_bn_exec"
+.PHONY : CMakeFiles/conv_bn_exec.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/fc_test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles 3
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/fc_test.dir/all
+CMakeFiles/conv_bn_exec.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles 5
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/conv_bn_exec.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles 0
-.PHONY : CMakeFiles/fc_test.dir/rule
+.PHONY : CMakeFiles/conv_bn_exec.dir/rule
 
 # Convenience name for target.
-fc_test: CMakeFiles/fc_test.dir/rule
-.PHONY : fc_test
+conv_bn_exec: CMakeFiles/conv_bn_exec.dir/rule
+.PHONY : conv_bn_exec
 
 # clean rule for target.
-CMakeFiles/fc_test.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/clean
-.PHONY : CMakeFiles/fc_test.dir/clean
+CMakeFiles/conv_bn_exec.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/clean
+.PHONY : CMakeFiles/conv_bn_exec.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
