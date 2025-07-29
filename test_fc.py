@@ -14,8 +14,9 @@ base_path = "./lenet_weights_epoch(10)"
 fc_in_dim = 120
 fc_out_dim = 84
 
-input_tensor = torch.arange(1, fc_in_dim + 1, dtype=torch.float32).view(1, -1)
-np.savetxt("./results/fc1_input.txt", input_tensor.numpy().flatten(), delimiter=",")
+# input_tensor = torch.arange(1, fc_in_dim + 1, dtype=torch.float32).view(1, -1)
+# np.savetxt("./results/fc1_input.txt", input_tensor.numpy().flatten(), delimiter=",")
+input_tensor = load_txt_tensor("./results/fc1_input.txt", (1, 120))
 
 weight = load_txt_tensor(f"{base_path}/fc1_weight.txt", (fc_out_dim, fc_in_dim))
 bias   = load_txt_tensor(f"{base_path}/fc1_bias.txt", (fc_out_dim,))

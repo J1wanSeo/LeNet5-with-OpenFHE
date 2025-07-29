@@ -61,16 +61,16 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 ### EXAMPLE:
 ### add_executable(fc_test matrix_vector_mult.cpp)
 ### add_executable(conv_test conv_layer_full_bn.cpp)
-add_executable(conv_bn_exec
-    src/main.cpp
-    src/conv_bn_module.cpp
-    src/relu.cpp
-)
-add_executable(test
-    src/test.cpp
-    src/conv_bn_module.cpp
-)
-### add_executable(fc_test 
-###    src/fc_layer.cpp
+### add_executable(conv_bn_exec
+###    src/main.cpp
+###    src/conv_bn_module.cpp
+###    src/relu.cpp
+###)
+### add_executable(test
+###    src/test.cpp
 ###    src/conv_bn_module.cpp
 ###)
+add_executable(fc_test 
+    src/fc_layer.cpp
+    src/conv_bn_module.cpp
+)

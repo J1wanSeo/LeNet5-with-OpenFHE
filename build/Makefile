@@ -117,38 +117,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named conv_bn_exec
+# Target rules for targets named fc_test
 
 # Build rule for target.
-conv_bn_exec: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 conv_bn_exec
-.PHONY : conv_bn_exec
+fc_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 fc_test
+.PHONY : fc_test
 
 # fast build rule for target.
-conv_bn_exec/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/build
-.PHONY : conv_bn_exec/fast
-
-#=============================================================================
-# Target rules for targets named test
-
-# Build rule for target.
-test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
-.PHONY : test
-
-# fast build rule for target.
-test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
-.PHONY : test/fast
+fc_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/build
+.PHONY : fc_test/fast
 
 src/conv_bn_module.o: src/conv_bn_module.cpp.o
 .PHONY : src/conv_bn_module.o
 
 # target to build an object file
 src/conv_bn_module.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/conv_bn_module.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/src/conv_bn_module.cpp.o
 .PHONY : src/conv_bn_module.cpp.o
 
 src/conv_bn_module.i: src/conv_bn_module.cpp.i
@@ -156,8 +142,7 @@ src/conv_bn_module.i: src/conv_bn_module.cpp.i
 
 # target to preprocess a source file
 src/conv_bn_module.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/conv_bn_module.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/src/conv_bn_module.cpp.i
 .PHONY : src/conv_bn_module.cpp.i
 
 src/conv_bn_module.s: src/conv_bn_module.cpp.s
@@ -165,81 +150,32 @@ src/conv_bn_module.s: src/conv_bn_module.cpp.s
 
 # target to generate assembly for a file
 src/conv_bn_module.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/conv_bn_module.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/src/conv_bn_module.cpp.s
 .PHONY : src/conv_bn_module.cpp.s
 
-src/main.o: src/main.cpp.o
-.PHONY : src/main.o
+src/fc_layer.o: src/fc_layer.cpp.o
+.PHONY : src/fc_layer.o
 
 # target to build an object file
-src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
+src/fc_layer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/src/fc_layer.cpp.o
+.PHONY : src/fc_layer.cpp.o
 
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
-
-# target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
-
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
-
-# target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
-
-src/relu.o: src/relu.cpp.o
-.PHONY : src/relu.o
-
-# target to build an object file
-src/relu.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o
-.PHONY : src/relu.cpp.o
-
-src/relu.i: src/relu.cpp.i
-.PHONY : src/relu.i
+src/fc_layer.i: src/fc_layer.cpp.i
+.PHONY : src/fc_layer.i
 
 # target to preprocess a source file
-src/relu.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.i
-.PHONY : src/relu.cpp.i
+src/fc_layer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/src/fc_layer.cpp.i
+.PHONY : src/fc_layer.cpp.i
 
-src/relu.s: src/relu.cpp.s
-.PHONY : src/relu.s
-
-# target to generate assembly for a file
-src/relu.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s
-.PHONY : src/relu.cpp.s
-
-src/test.o: src/test.cpp.o
-.PHONY : src/test.o
-
-# target to build an object file
-src/test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.o
-.PHONY : src/test.cpp.o
-
-src/test.i: src/test.cpp.i
-.PHONY : src/test.i
-
-# target to preprocess a source file
-src/test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.i
-.PHONY : src/test.cpp.i
-
-src/test.s: src/test.cpp.s
-.PHONY : src/test.s
+src/fc_layer.s: src/fc_layer.cpp.s
+.PHONY : src/fc_layer.s
 
 # target to generate assembly for a file
-src/test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.s
-.PHONY : src/test.cpp.s
+src/fc_layer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/fc_test.dir/build.make CMakeFiles/fc_test.dir/src/fc_layer.cpp.s
+.PHONY : src/fc_layer.cpp.s
 
 # Help Target
 help:
@@ -249,20 +185,13 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... conv_bn_exec"
-	@echo "... test"
+	@echo "... fc_test"
 	@echo "... src/conv_bn_module.o"
 	@echo "... src/conv_bn_module.i"
 	@echo "... src/conv_bn_module.s"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
-	@echo "... src/relu.o"
-	@echo "... src/relu.i"
-	@echo "... src/relu.s"
-	@echo "... src/test.o"
-	@echo "... src/test.i"
-	@echo "... src/test.s"
+	@echo "... src/fc_layer.o"
+	@echo "... src/fc_layer.i"
+	@echo "... src/fc_layer.s"
 .PHONY : help
 
 
