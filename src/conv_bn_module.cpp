@@ -242,3 +242,138 @@ void SaveDecryptedConvOutput(
     }
 }
 
+
+// 컨볼루션 결과를 연속적으로 리패킹하는 함수
+// inputH, inputW: 원본 입력 크기
+// outputH, outputW: 컨볼루션 출력 크기
+Ciphertext<DCRTPoly> RepackConvolutionResult(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_input,
+    int inputH, int inputW, // 32, 32
+    int outputH, int outputW // 28, 28
+) {
+    size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
+    std::vector<Ciphertext<DCRTPoly>> repack_ciphers;
+
+    // 각 행별로 처리
+    for (int i = 0; i < outputH; ++i) {
+        // i번째 행의 시작 인덱스와 목표 인덱스
+        int sourceStart = i * inputW;           // 0, 32, 64
+        int targetStart = i * outputW;          // 0, 28, 56
+        
+        // 해당 행의 outputW개 원소를 마스킹
+        std::vector<double> mask(slotCount, 0.0);
+        for (int j = 0; j < outputW; ++j) {
+            mask[sourceStart + j] = 1.0;  // 연속된 outputW개 원소 선택
+        }
+        auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
+        
+        // 마스킹 적용
+        auto ct_masked = cc->EvalMult(ct_input, pt_mask);
+        
+        // 목표 위치로 rotation
+        int rot_amount = -targetStart + sourceStart;  // 0, -2, -4, ...
+        auto ct_rot = (rot_amount == 0) ? ct_masked : cc->EvalRotate(ct_masked, rot_amount);
+        
+        repack_ciphers.push_back(ct_rot);
+    }
+    
+    return cc->EvalAddMany(repack_ciphers);
+}
+
+// 사용 예시:
+// 5x5 입력에서 3x3 컨볼루션 결과를 리패킹
+// auto repacked = RepackConvolutionResult(cc, conv_result, 5, 5, 3, 3);
+
+std::vector<Ciphertext<DCRTPoly>> RepackConvolutionResult_MultiChannel(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
+    int inputH, int inputW,
+    int outputH, int outputW
+) {
+    std::vector<Ciphertext<DCRTPoly>> repacked;
+    for (const auto& ct : ct_channels) {
+        repacked.push_back(RepackConvolutionResult(cc, ct, inputH, inputW, outputH, outputW));
+    }
+    return repacked;
+}
+
+
+std::vector<int> GenerateRepackRotationKeys(
+    int inputH, int inputW,
+    int outputH, int outputW
+) {
+    std::vector<int> rotationKeys;
+    
+    for (int i = 0; i < outputH; ++i) {
+        int sourceStart = i * inputW;           // 0, 5, 10, ...
+        int targetStart = i * outputW;          // 0, 3, 6, ...
+        int rot_amount = - targetStart + sourceStart;  // 0, -2, -4, ...
+        
+        if (rot_amount != 0) {
+            rotationKeys.push_back(rot_amount);
+        }
+    }
+    
+    return rotationKeys;
+}
+
+Ciphertext<DCRTPoly> ExtractOddIndexElements_Simple(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_input,
+    int totalElements = 392
+) {
+    size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
+    std::vector<Ciphertext<DCRTPoly>> parts;
+    
+    int extractedCount = totalElements / 2;  // 98개
+    
+    for (int target = 0; target < extractedCount; ++target) {
+        int source = target * 2 + 1;  // 1,3,5,7,9,...
+        
+        // source 위치만 마스킹
+        std::vector<double> mask(slotCount, 0.0);
+        mask[source] = 1.0;
+        auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
+        
+        auto ct_masked = cc->EvalMult(ct_input, pt_mask);
+        
+        // target 위치로 이동
+        int rot_amount = target - source;
+        auto ct_rot = (rot_amount == 0) ? ct_masked : cc->EvalRotate(ct_masked, rot_amount);
+        
+        parts.push_back(ct_rot);
+    }
+    
+    return cc->EvalAddMany(parts);
+}
+
+std::vector<Ciphertext<DCRTPoly>> ExtractOddIndexElements_MultiChannel(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
+    int totalElements
+) {
+    std::vector<Ciphertext<DCRTPoly>> extracted;
+    for (const auto& ct : ct_channels) {    
+        extracted.push_back(ExtractOddIndexElements_Simple(cc, ct, totalElements));
+    }
+    return extracted;
+}
+
+// 필요한 rotation key들 생성
+std::vector<int> GenerateOddExtractionRotationKeys_Sequential(int totalElements = 392) {
+    std::set<int> uniqueRotations;
+    int extractedCount = totalElements / 2;
+    
+    for (int target = 0; target < extractedCount; ++target) {
+        int source = target * 2 + 1;  // 1,3,5,7,9,...
+        int rot_amount = target - source;
+        
+        if (rot_amount != 0) {
+            uniqueRotations.insert(rot_amount);
+        }
+    }
+    
+    std::vector<int> rotationKeys(uniqueRotations.begin(), uniqueRotations.end());
+    return rotationKeys;
+}

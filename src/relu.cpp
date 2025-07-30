@@ -1,5 +1,6 @@
 // conv_bn_module.cpp
 #include "conv_bn_module.h"
+#include "relu.h"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -62,7 +63,6 @@ Ciphertext<DCRTPoly> ApproxReLU4_quad(CryptoContext<DCRTPoly> cc, const Cipherte
     return result;
 }
 
-#include "relu.h"
 
 std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
     CryptoContext<DCRTPoly> cc,
@@ -71,8 +71,8 @@ std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
 
     std::vector<Ciphertext<DCRTPoly>> activated;
     for (auto& ct : ct_channels) {
-        std::cout << "[RELU] Level: " << ct->GetLevel()
-                  << ", Scale: " << ct->GetScalingFactor() << std::endl;
+        // std::cout << "[RELU] Level: " << ct->GetLevel()
+        //           << ", Scale: " << ct->GetScalingFactor() << std::endl;
 
         Ciphertext<DCRTPoly> out;
         if (mode == 0)       out = ApproxReLU4_square(cc, ct);

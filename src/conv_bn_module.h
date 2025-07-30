@@ -56,3 +56,36 @@ void SaveDecryptedConvOutput(
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
     size_t outH, size_t outW,
     const std::string& prefix);
+
+std::vector<int> GenerateRepackRotationKeys(
+    int inputH, int inputW,
+    int outputH, int outputW
+);
+
+std::vector<Ciphertext<DCRTPoly>> RepackConvolutionResult_MultiChannel(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
+    int inputH, int inputW,
+    int outputH, int outputW
+);
+
+Ciphertext<DCRTPoly> RepackConvolutionResult(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_input,
+    int inputH, int inputW,
+    int outputH, int outputW
+);
+
+Ciphertext<DCRTPoly> ExtractOddIndexElements_Simple(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_input,
+    int totalElements
+);
+
+std::vector<Ciphertext<DCRTPoly>> ExtractOddIndexElements_MultiChannel(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
+    int totalElements
+);
+
+std::vector<int> GenerateOddExtractionRotationKeys_Sequential(int totalElements);
