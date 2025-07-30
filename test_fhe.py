@@ -80,55 +80,45 @@ os.makedirs(out_path, exist_ok=True)
 
 for ch in range(6):
     np.savetxt(
-        os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_bn.txt"),
+        os.path.join(out_path, f"py_conv1_output_{ch}.txt"),
         x_bn[0, ch].view(-1).numpy(),
         delimiter=","
     )
 
-for ch in range(6):
-    np.savetxt(
-        os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_relu.txt"),
-        x_bn[0, ch].view(-1).numpy(),
-        delimiter=","
-    )
 
 for ch in range(6):
     np.savetxt(
-        os.path.join(out_path, f"py_conv1_output_channel_{ch}_b4_avgpool.txt"),
+        os.path.join(out_path, f"py_relu1_output_{ch}.txt"),
         x_relu[0, ch].view(-1).numpy(),
         delimiter=","
     )
+
 for ch in range(6):
     np.savetxt(
-        os.path.join(out_path, f"py_conv1_output_channel_{ch}.txt"),
+        os.path.join(out_path, f"py_pool1_output_{ch}.txt"),
         x_pool[0, ch].view(-1).numpy(),
         delimiter=","
     )
 
 for ch in range(16):
     np.savetxt(
-        os.path.join(out_path, f"py_conv2_output_channel_{ch}_b4_bn.txt"),
+        os.path.join(out_path, f"py_conv2_output_{ch}.txt"),
         x_bn2[0, ch].view(-1).numpy(),
         delimiter=","
     )
 
 for ch in range(16):
     np.savetxt(
-        os.path.join(out_path, f"py_conv2_output_channel_{ch}_b4_relu.txt"),
-        x_bn2[0, ch].view(-1).numpy(),
+        os.path.join(out_path, f"py_relu2_output_{ch}.txt"),
+        x_relu2[0, ch].view(-1).numpy(),    
         delimiter=","
     )
 
 for ch in range(16):
     np.savetxt(
-        os.path.join(out_path, f"py_conv2_output_channel_{ch}_b4_avgpool.txt"),
-        x_relu2[0, ch].view(-1).numpy(),
-        delimiter=","
-    )
-
-for ch in range(16):
-    np.savetxt(
-        os.path.join(out_path, f"py_conv2_output_channel_{ch}.txt"),
+        os.path.join(out_path, f"py_pool2_output_{ch}.txt"),
         x_pool2[0, ch].view(-1).numpy(),
         delimiter=","
     )
+
+

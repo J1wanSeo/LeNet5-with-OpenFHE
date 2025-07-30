@@ -19,6 +19,7 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
     size_t inputH, size_t inputW,
     size_t filterH, size_t filterW,
     size_t stride,
+    size_t interleave,
     const std::vector<int>& rotIndices,
     const PublicKey<DCRTPoly>& pk);
 
@@ -40,6 +41,7 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     size_t stride,
     size_t in_channels, size_t out_channels,
     size_t layerIndex,
+    size_t interleave,
     const PublicKey<DCRTPoly>& publicKey,
     const PrivateKey<DCRTPoly>& secretKey);
 
@@ -47,8 +49,7 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
 std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
     CryptoContext<DCRTPoly> cc,
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
-    size_t inputH, size_t inputW,
-    const std::vector<int>& rotIndices);   
+    size_t inputH, size_t inputW);   
 
 void SaveDecryptedConvOutput(
     CryptoContext<DCRTPoly> cc,
@@ -89,3 +90,11 @@ std::vector<Ciphertext<DCRTPoly>> ExtractOddIndexElements_MultiChannel(
 );
 
 std::vector<int> GenerateOddExtractionRotationKeys_Sequential(int totalElements);
+
+std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS_SequentialPack(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
+    size_t inputH, size_t inputW);
+
+std::vector<int> GenerateAvgPool2x2SequentialPackRotationIndices(
+    size_t inputH, size_t inputW);
