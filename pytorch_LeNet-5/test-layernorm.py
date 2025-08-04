@@ -21,6 +21,30 @@ N_EPOCHS = 10
 
 IMG_SIZE = 32
 
+def select_activation():
+    print("Select Activation function:")
+    print("0: linear (x)")
+    print("1: square (x^2)")
+    print("2: CryptoNet (0.25 + 0.5 * x + 0.125 * x^2)")
+    # print("3: quad_v4 (0.5 * x + 0.125 * x^2)")
+    print("3: quad (0.234606 + 0.5 * x + 0.204875 * x^2 - 0.0063896 * x^4)")
+    print("4: student (custom polynomial)")
+    print("5: ReLU-maker (utils_approx.ReLU_maker)")
+    choice = input("Enter number (0~5): ")
+    try:
+        choice_int = int(choice)
+        if choice_int not in range(6):
+            raise ValueError
+    except:
+        print("Invalid input, defaulting to CryptoNet")
+        choice_int = 2
+
+    key_list = list(quad_relu_polynomials.keys())
+    selected_key = key_list[choice_int]
+    print(f"Selected activation: {selected_key} - {quad_relu_polynomials[selected_key][1]}")
+    return quad_relu_polynomials[selected_key]
+
+
 def get_accuracy(model, data_loader, device, act_override=None):
 
     correct_pred = 0
@@ -214,18 +238,18 @@ quad_relu_polynomials = {
                 "x ** 2"),
     'quad_v3': (lambda x: 0.125 * x**2 + 0.5 * x + 0.25,
                 "0.25 + 0.5 * x + 0.125 * x**2"),            
-    'quad_v4': (lambda x: 0.125*x**2 + 0.5 * x,
-                "0.5 * x + 0.125*x**2"),
+    # 'quad_v4': (lambda x: 0.125*x**2 + 0.5 * x,
+    #             "0.5 * x + 0.125*x**2"),
     'quad_v5': (lambda x: 0.234606 + 0.5 * x + 0.204875 * x ** 2 - 0.0063896 * x ** 4,
                 "0.234606 + 0.5 * x + 0.204875 * x ** 2 - 0.0063896 * x ** 4"),
-    'quad_v6': (lambda x: 1.5522e-9 * x**18 - 1.7764e-7 * x**16 + 8.5114e-6 * x**14 - 2.2146e-4 * x**12 + 3.3960e-3 * x**10 - 3.1183e-2 * x**8 + 1.6707e-1 * x**6 - 4.9304e-1 * x**4 + 8.5369e-1 * x**2 + 0.5 * x + 3.8838e-2,
-                "1.5522e-9 * x**18 - 1.7764e-7 * x**16 + ... + 0.5*x + 3.8838e-2"),
+    # 'quad_v6': (lambda x: 1.5522e-9 * x**18 - 1.7764e-7 * x**16 + 8.5114e-6 * x**14 - 2.2146e-4 * x**12 + 3.3960e-3 * x**10 - 3.1183e-2 * x**8 + 1.6707e-1 * x**6 - 4.9304e-1 * x**4 + 8.5369e-1 * x**2 + 0.5 * x + 3.8838e-2,
+    #             "1.5522e-9 * x**18 - 1.7764e-7 * x**16 + ... + 0.5*x + 3.8838e-2"),
     'ReLU-maker' : (lambda x: ReLU_maker({'type':'proposed','alpha':13,'B':50})(x), "ReLU Maker with alpha==13")
 
     }
 
 # 선택
-quad_relu, quad_relu_str = quad_relu_polynomials['quad_v1']
+quad_relu, quad_relu_str = select_activation()
 
 
 
@@ -265,7 +289,7 @@ class LeNet5(nn.Module):
         # input normalization
         # x = x / 255.0
 
-        x = (x - self.mean) / self.std
+        # x = (x - self.mean) / self.std
         # Conv1 + LayerNorm + Activation + Pool
         x = self.conv1(x)
         x = self.bn1(x)

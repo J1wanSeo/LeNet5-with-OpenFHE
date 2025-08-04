@@ -31,6 +31,15 @@ beta2   = load_txt_tensor(f"{base_path}/conv2_bn_beta.txt", (16,))
 mean2   = load_txt_tensor(f"{base_path}/conv2_bn_mean.txt", (16,))
 var2    = load_txt_tensor(f"{base_path}/conv2_bn_var.txt", (16,))
 
+# conv3
+weight3 = load_txt_tensor(f"{base_path}/conv3_weight.txt", (120, 16, 5, 5))
+bias3   = load_txt_tensor(f"{base_path}/conv3_bias.txt", (120,))
+gamma3  = load_txt_tensor(f"{base_path}/conv3_bn_gamma.txt", (120,))
+beta3   = load_txt_tensor(f"{base_path}/conv3_bn_beta.txt", (120,))
+mean3   = load_txt_tensor(f"{base_path}/conv3_bn_mean.txt", (120,))
+var3    = load_txt_tensor(f"{base_path}/conv3_bn_var.txt", (120,))
+
+
 
 conv1 = torch.nn.Conv2d(1, 6, 5, stride=1, bias=True)
 conv1.weight.data = weight1
@@ -39,6 +48,10 @@ conv1.bias.data = bias1
 conv2 = torch.nn.Conv2d(6, 16, 5, stride=1, bias=True)
 conv2.weight.data = weight2
 conv2.bias.data = bias2
+
+conv3 = torch.nn.Conv2d(16, 120, 5, stride=1, bias=True)
+conv3.weight.data = weight3
+conv3.bias.data = bias3
 
 bn1 = torch.nn.BatchNorm2d(6)
 bn1.weight.data = gamma1
@@ -54,9 +67,16 @@ bn2.running_mean = mean2
 bn2.running_var = var2
 bn2.eval()
 
+bn3 = torch.nn.BatchNorm2d(120)
+bn3.weight.data = gamma3
+bn3.bias.data = beta3
+bn3.running_mean = mean3
+bn3.running_var = var3
+bn3.eval()
 
 def approx_relu4(x):
-    return 0.234606 + 0.5 * x + 0.204875 * x**2 - 0.0063896 * x**4
+    return x ** 2
+    #0.234606 + 0.5 * x + 0.204875 * x**2 - 0.0063896 * x**4
 
 
 with torch.no_grad():
@@ -72,6 +92,11 @@ with torch.no_grad():
     x_relu2 = approx_relu4(x_bn2)
 
     x_pool2 = torch.nn.functional.avg_pool2d(x_relu2, kernel_size=2, stride=2)
+
+    # conv3 수행 (입력 16채널, 20x20 크기)
+    x_conv3 = conv3(x_pool2)
+    x_bn3 = bn3(x_conv3)
+    x_relu3 = approx_relu4(x_bn3)
 
 
 out_path = "./results/"
@@ -121,4 +146,17 @@ for ch in range(16):
         delimiter=","
     )
 
+# conv3 결과 저장
+for ch in range(120):
+    np.savetxt(
+        os.path.join(out_path, f"py_conv3_output_{ch}.txt"),
+        x_bn3[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
+for ch in range(120):
+    np.savetxt(
+        os.path.join(out_path, f"py_relu3_output_{ch}.txt"),
+        x_relu3[0, ch].view(-1).numpy(),
+        delimiter=","
+    )
 

@@ -8,7 +8,7 @@
 using namespace lbcrypto;
 
 std::vector<double> LoadFromTxt(const std::string& filename);
-std::vector<int> GenerateRotationIndices(size_t filterH, size_t filterW, size_t inputW);
+std::vector<int> GenerateRotationIndices(size_t filterH, size_t filterW, size_t inputW, size_t interleave);
 
 // Conv2D
 Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
@@ -20,7 +20,6 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
     size_t filterH, size_t filterW,
     size_t stride,
     size_t interleave,
-    const std::vector<int>& rotIndices,
     const PublicKey<DCRTPoly>& pk);
 
 // BatchNorm
@@ -49,7 +48,8 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
 std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
     CryptoContext<DCRTPoly> cc,
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
-    size_t inputH, size_t inputW);   
+    size_t inputH, size_t inputW,
+    size_t interleave);   
 
 void SaveDecryptedConvOutput(
     CryptoContext<DCRTPoly> cc,
@@ -58,38 +58,27 @@ void SaveDecryptedConvOutput(
     size_t outH, size_t outW,
     const std::string& prefix);
 
-std::vector<int> GenerateRepackRotationKeys(
+std::vector<int> GenerateReAlignRotationKeys(
     int inputH, int inputW,
-    int outputH, int outputW
+    int outputH, int outputW,
+    int interleave
 );
 
-std::vector<Ciphertext<DCRTPoly>> RepackConvolutionResult_MultiChannel(
+std::vector<Ciphertext<DCRTPoly>> ReAlignConvolutionResult_MultiChannel(
     CryptoContext<DCRTPoly> cc,
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
     int inputH, int inputW,
-    int outputH, int outputW
+    int outputH, int outputW,
+    int interleave
 );
 
-Ciphertext<DCRTPoly> RepackConvolutionResult(
+Ciphertext<DCRTPoly> ReAlignConvolutionResult(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_input,
     int inputH, int inputW,
-    int outputH, int outputW
+    int outputH, int outputW,
+    int interleave
 );
-
-Ciphertext<DCRTPoly> ExtractOddIndexElements_Simple(
-    CryptoContext<DCRTPoly> cc,
-    const Ciphertext<DCRTPoly>& ct_input,
-    int totalElements
-);
-
-std::vector<Ciphertext<DCRTPoly>> ExtractOddIndexElements_MultiChannel(
-    CryptoContext<DCRTPoly> cc,
-    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
-    int totalElements
-);
-
-std::vector<int> GenerateOddExtractionRotationKeys_Sequential(int totalElements);
 
 std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS_SequentialPack(
     CryptoContext<DCRTPoly> cc,

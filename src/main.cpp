@@ -40,31 +40,47 @@ int main() {
 
     std::set<int> all_rot_indices;
 
+    int relu_mode;
+
+    std::cout << "=============================================\n";
+    std::cout << "|           Select ReLU Mode                 |\n";
+    std::cout << "=============================================\n";
+    std::cout << std::left;
+    std::cout << " 0 : x^2 (Square function)\n";
+    std::cout << " 1 : CryptoNet (0.25 + 0.5x + 0.125x^2)\n";
+    std::cout << " 2 : quad (4th degree polynomial approx.)\n";
+    std::cout << " 3 : student polynomial (custom)\n";
+    std::cout << "---------------------------------------------\n";
+    std::cout << "Enter your choice (0 - 3): ";
+
+    std::cin >> relu_mode;
+
+    std::cout << "You selected mode: " << relu_mode << std::endl;
+
     auto t0 = TimeNow();
-    // (1) Conv1: 5x5, input 32x32
-    auto conv1_rot = GenerateRotationIndices(5, 5, 32);
+
+    // (1) Conv1: 5x5, input 32x32, Conv2: 5x5, input 14x14
+    auto conv1_rot = GenerateRotationIndices(5, 5, 32, 1);
     all_rot_indices.insert(conv1_rot.begin(), conv1_rot.end());
-    auto conv2_rot = GenerateRotationIndices(5, 5, 28);
+    auto conv2_rot = GenerateRotationIndices(5, 5, 28, 2);
     all_rot_indices.insert(conv2_rot.begin(), conv2_rot.end());
+    auto conv3_rot = GenerateRotationIndices(5, 5, 20, 4);
+    all_rot_indices.insert(conv3_rot.begin(), conv3_rot.end());
 
     // (2) Conv1-Repack: 32x32 → 28x28
-    auto repack1_rot = GenerateRepackRotationKeys(32, 32, 28, 28);
-    all_rot_indices.insert(repack1_rot.begin(), repack1_rot.end());
-    
+    auto ReAlign1_rot = GenerateReAlignRotationKeys(32, 32, 28, 28, 1);
+    all_rot_indices.insert(ReAlign1_rot.begin(), ReAlign1_rot.end());
+    auto ReAlign2_rot = GenerateReAlignRotationKeys(28, 28, 20, 20, 1);
+    all_rot_indices.insert(ReAlign2_rot.begin(), ReAlign2_rot.end());
+    auto ReAlign3_rot = GenerateReAlignRotationKeys(20, 20, 8, 8, 1);
+    all_rot_indices.insert(ReAlign3_rot.begin(), ReAlign3_rot.end());
+
     // (3) AvgPool1(SequentialPack): 28x28 input, 2x2, stride=2
 
-    for (size_t dy = 0; dy < 2; dy++) {
-        for (size_t dx = 0; dx < 2; dx++) {
-            int rotAmount = dy * 28 + dx;
-            all_rot_indices.insert(rotAmount);
-        }
-    }
-
-    auto repack2_rot = GenerateRepackRotationKeys(56, 56, 28, 28);
-    // auto repack2_rot2 = GenerateRepackRotationKeys(14, 28, 10, 10);
-    all_rot_indices.insert(repack2_rot.begin(), repack2_rot.end());
-    // all_rot_indices.insert(repack2_rot2.begin(), repack2_rot2.end());
-
+    auto pool1_rot = GenerateRotationIndices(2, 2, 28, 1);
+    all_rot_indices.insert(pool1_rot.begin(), pool1_rot.end());
+    auto pool2_rot = GenerateRotationIndices(2, 2, 20, 2);
+    all_rot_indices.insert(pool2_rot.begin(), pool2_rot.end());
 
     std::vector<int> rotIndices(all_rot_indices.begin(), all_rot_indices.end());
     cc->EvalRotateKeyGen(keys.secretKey, rotIndices);
@@ -84,80 +100,83 @@ int main() {
     cout << "[Layer 1] Conv+BN elapsed: " << TimeNow() - t0 << " sec" << endl;
     // SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv1, 32, 32, "conv1_output");
 
-    int mode = 2;
     t0 = TimeNow();
-    auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1, mode);
+    auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1, relu_mode);
     cout << "[Layer 1] ReLU elapsed: " << TimeNow() - t0 << " sec" << endl;
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_relu1, 32, 32, "relu1_output");
 
     t0 = TimeNow(); 
-    auto ct_repack1 = RepackConvolutionResult_MultiChannel(cc, ct_relu1, 32, 32, 28, 28);
-    cout << "[Layer 1] Repack elapsed: " << TimeNow() - t0 << " sec" << endl;
-    SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack1, 28, 28, "repack1_output");
+    auto ct_repack1 = ReAlignConvolutionResult_MultiChannel(cc, ct_relu1, 32, 32, 28, 28, 1);
+    cout << "[Layer 1] Realignment elapsed: " << TimeNow() - t0 << " sec" << endl;
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack1, 28, 28, "realign1_output");
 
     t0 = TimeNow();
-    auto ct_pool1 = AvgPool2x2_MultiChannel_CKKS(cc, ct_repack1, 28, 28);
+    auto ct_pool1 = AvgPool2x2_MultiChannel_CKKS(cc, ct_repack1, 28, 28, 1);
     cout << "[Layer 1] AvgPool elapsed: " << TimeNow() - t0 << " sec" << endl;
     // SaveDecryptedConvOutput(cc, keys.secretKey, ct_pool1, 28, 28, "pool1_output");
 
-    t0 = TimeNow();
-    auto ct_repack1_2 = RepackConvolutionResult_MultiChannel(cc, ct_pool1, 56, 56, 28, 28);
-    cout << "[Layer 1] Repack elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // // SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack2, 28, 28, "repack2_output");
-
+    // std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
+    //     CryptoContext<DCRTPoly> cc,
+    //     const std::vector<Ciphertext<DCRTPoly>>& ct_input_channels,
+    //     const std::string& pathPrefix,
+    //     size_t inputH, size_t inputW,
+    //     size_t filterH, size_t filterW,
+    //     size_t stride,
+    //     size_t in_channels, size_t out_channels,
+    //     size_t layerIndex,
+    //     size_t interleave,
+    //     const PublicKey<DCRTPoly>& publicKey,
+    //     const PrivateKey<DCRTPoly>& secretKey);
 
     // =======================
     // Layer 2: Conv2 + BN + ReLU + AvgPool
     // =======================
     t0 = TimeNow();
-    auto ct_conv2 = ConvBnLayer(cc, ct_repack1, path,
-                                14, 28, 5, 5, 1,
+    auto ct_conv2 = ConvBnLayer(cc, ct_pool1, path,
+                                28, 28, 5, 5, 1,
                                 6, 16, 2, 2,
                                 keys.publicKey, keys.secretKey);
     cout << "[Layer 2] Conv+BN elapsed: " << TimeNow() - t0 << " sec" << endl;
-    SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv2, 28, 28, "conv2_output");
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv2, 28, 28, "conv2_output");
 
     t0 = TimeNow();
-    auto ct_relu2 = ApplyApproxReLU4_All(cc, ct_conv2, mode);
+    auto ct_relu2 = ApplyApproxReLU4_All(cc, ct_conv2, relu_mode);
     cout << "[Layer 2] ReLU elapsed: " << TimeNow() - t0 << " sec" << endl;
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_relu2, 28, 28, "relu2_output");
 
     t0 = TimeNow(); 
-    auto ct_repack2 = RepackConvolutionResult_MultiChannel(cc, ct_relu2, 28, 28, 10, 10);
+    auto ct_repack2 = ReAlignConvolutionResult_MultiChannel(cc, ct_relu2, 28, 28, 20, 20, 1);
     cout << "[Layer 2] Repack elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack2, 14, 14, "repack2_output");
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack2, 20, 20, "repack2_output");
 
     t0 = TimeNow();
-    auto ct_pool2 = AvgPool2x2_MultiChannel_CKKS(cc, ct_relu2, 28, 28);
+    auto ct_pool2 = AvgPool2x2_MultiChannel_CKKS(cc, ct_repack2, 20, 20, 2);
     cout << "[Layer 2] AvgPool elapsed: " << TimeNow() - t0 << " sec" << endl;
-    SaveDecryptedConvOutput(cc, keys.secretKey, ct_pool2, 28, 28, "pool2_output");
+    SaveDecryptedConvOutput(cc, keys.secretKey, ct_pool2, 20, 20, "pool2_output");
 
-    
-    // t0 = TimeNow();
-    // // 32x32 input에서 28x28 repack (좌상단)
-    // // gather_indices 생성 (row-major 기준, stride/crop/ROI 모두 확장 가능)
-    // gather_indices = GenerateRepackRotationKeys(56, 56, 20, 20); // INPUT: 64x64, OUTPUT: 28x28
-
-    // // 필요한 rotation 인덱스 준비
-    // cc->EvalRotateKeyGen(keys.secretKey, gather_indices);
-    // cout << "[Layer 1] Rotate KeyGen elapsed: " << TimeNow() - t0 << " sec" << endl;
-
-    // t0 = TimeNow();
-    // auto ct_repack3 = RepackConvolutionResult_MultiChannel(cc, ct_pool2, 56, 56, 20, 20);
-    // cout << "[Layer 1] Repack elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack3, 20, 20, "repack3_output");
 
     // // =======================
     // // Layer 3: Conv3 + BN + ReLU (no Pool)
     // // input: 16ch × 5×5 filter → output: 120 feature maps
     // // =======================
-    // t0 = TimeNow();
-    // auto ct_conv3 = ConvBnLayer(cc, ct_pool2, path,
-    //                             8, 8, 5, 5, 1,
-    //                             16, 120, 3,
-    //                             keys.publicKey, keys.secretKey);
-    // cout << "[Layer 3] Conv+BN elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv3, 4, 4, "conv3_output");
 
-    // auto ct_relu3 = ApplyApproxReLU4_All(cc, ct_conv3, mode);
+    t0 = TimeNow();
+    auto ct_conv3 = ConvBnLayer(cc, ct_pool2, path,
+                                20, 20, 5, 5, 1,
+                                16, 120, 3, 4,
+                                keys.publicKey, keys.secretKey);
+    cout << "[Layer 3] Conv+BN elapsed: " << TimeNow() - t0 << " sec" << endl;
+    SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv3, 4, 4, "conv3_output");
+
+    auto ct_relu3 = ApplyApproxReLU4_All(cc, ct_conv3, relu_mode);
+    SaveDecryptedConvOutput(cc, keys.secretKey, ct_relu3, 20, 20, "relu3_output");
+
+    t0 = TimeNow(); 
+    auto ct_repack3 = ReAlignConvolutionResult_MultiChannel(cc, ct_relu3, 20, 20, 8, 8, 1);
+    cout << "[Layer 3] Repack elapsed: " << TimeNow() - t0 << " sec" << endl;
+    SaveDecryptedConvOutput(cc, keys.secretKey, ct_repack3, 8, 8, "repack3_output");
+
+    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv3, 4, 4, "conv3_output");
 
     // // =======================
     // // Layer 4: Flatten 4x4x120 -> 1920
@@ -178,5 +197,5 @@ int main() {
     // SaveDecryptedConvOutput(cc, keys.secretKey, {ct_fc2}, 1, 10, "fc2_output");
 
     cout << "[LeNet-5 with OpenFHE] Forward Pass Completed and Output Saved." << endl;
-    return 0;
+    return 0;   
 }
