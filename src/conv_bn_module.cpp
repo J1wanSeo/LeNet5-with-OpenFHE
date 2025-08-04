@@ -136,7 +136,7 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     // size_t outW = (inputW - filterW) / stride + 1;
 
     std::vector<Ciphertext<DCRTPoly>> outputs;
-
+    #pragma omp parallel for
     for (size_t out_ch = 0; out_ch < out_channels; out_ch++) {
         Ciphertext<DCRTPoly> ct_sum;
         for (size_t in_ch = 0; in_ch < in_channels; in_ch++) {
@@ -188,6 +188,7 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
 
     // 채널별 AvgPool 수행
     std::vector<Ciphertext<DCRTPoly>> pooled;
+    #pragma omp parallel for
     for (const auto& ct_input : ct_channels) {
         std::vector<Ciphertext<DCRTPoly>> partials;
 
@@ -299,6 +300,7 @@ std::vector<Ciphertext<DCRTPoly>> ReAlignConvolutionResult_MultiChannel(
     int interleave
 ) {
     std::vector<Ciphertext<DCRTPoly>> ReAligned;
+    #pragma omp parallel for
     for (const auto& ct : ct_channels) {
         ReAligned.push_back(ReAlignConvolutionResult(cc, ct, inputH, inputW, outputH, outputW, interleave));
     }

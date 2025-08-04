@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ubuntu/LeNet5-with-OpenFHE
+CMAKE_SOURCE_DIR = /home/jwseo/openfhe_LeNet-5
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ubuntu/LeNet5-with-OpenFHE/build
+CMAKE_BINARY_DIR = /home/jwseo/openfhe_LeNet-5/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/conv_bn_exec.dir/depend.make
@@ -72,58 +72,58 @@ include CMakeFiles/conv_bn_exec.dir/flags.make
 CMakeFiles/conv_bn_exec.dir/src/main.cpp.o: CMakeFiles/conv_bn_exec.dir/flags.make
 CMakeFiles/conv_bn_exec.dir/src/main.cpp.o: ../src/main.cpp
 CMakeFiles/conv_bn_exec.dir/src/main.cpp.o: CMakeFiles/conv_bn_exec.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/main.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/main.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/main.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/main.cpp.o -c /home/ubuntu/LeNet5-with-OpenFHE/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/main.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/main.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/main.cpp.o -c /home/jwseo/openfhe_LeNet-5/src/main.cpp
 
 CMakeFiles/conv_bn_exec.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/conv_bn_exec.dir/src/main.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/LeNet5-with-OpenFHE/src/main.cpp > CMakeFiles/conv_bn_exec.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jwseo/openfhe_LeNet-5/src/main.cpp > CMakeFiles/conv_bn_exec.dir/src/main.cpp.i
 
 CMakeFiles/conv_bn_exec.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/conv_bn_exec.dir/src/main.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/LeNet5-with-OpenFHE/src/main.cpp -o CMakeFiles/conv_bn_exec.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jwseo/openfhe_LeNet-5/src/main.cpp -o CMakeFiles/conv_bn_exec.dir/src/main.cpp.s
 
 CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o: CMakeFiles/conv_bn_exec.dir/flags.make
 CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o: ../src/conv_bn_module.cpp
 CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o: CMakeFiles/conv_bn_exec.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o -c /home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o -c /home/jwseo/openfhe_LeNet-5/src/conv_bn_module.cpp
 
 CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.cpp > CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jwseo/openfhe_LeNet-5/src/conv_bn_module.cpp > CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.i
 
 CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.cpp -o CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jwseo/openfhe_LeNet-5/src/conv_bn_module.cpp -o CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.s
 
 CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o: CMakeFiles/conv_bn_exec.dir/flags.make
 CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o: ../src/relu.cpp
 CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o: CMakeFiles/conv_bn_exec.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o -c /home/ubuntu/LeNet5-with-OpenFHE/src/relu.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o -c /home/jwseo/openfhe_LeNet-5/src/relu.cpp
 
 CMakeFiles/conv_bn_exec.dir/src/relu.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/conv_bn_exec.dir/src/relu.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/LeNet5-with-OpenFHE/src/relu.cpp > CMakeFiles/conv_bn_exec.dir/src/relu.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jwseo/openfhe_LeNet-5/src/relu.cpp > CMakeFiles/conv_bn_exec.dir/src/relu.cpp.i
 
 CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/LeNet5-with-OpenFHE/src/relu.cpp -o CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jwseo/openfhe_LeNet-5/src/relu.cpp -o CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s
 
 CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o: CMakeFiles/conv_bn_exec.dir/flags.make
 CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o: ../src/fc_layer.cpp
 CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o: CMakeFiles/conv_bn_exec.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o -c /home/ubuntu/LeNet5-with-OpenFHE/src/fc_layer.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o -MF CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o.d -o CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o -c /home/jwseo/openfhe_LeNet-5/src/fc_layer.cpp
 
 CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.i"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ubuntu/LeNet5-with-OpenFHE/src/fc_layer.cpp > CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/jwseo/openfhe_LeNet-5/src/fc_layer.cpp > CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.i
 
 CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.s"
-	/usr/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ubuntu/LeNet5-with-OpenFHE/src/fc_layer.cpp -o CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/jwseo/openfhe_LeNet-5/src/fc_layer.cpp -o CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.s
 
 # Object files for target conv_bn_exec
 conv_bn_exec_OBJECTS = \
@@ -144,7 +144,7 @@ conv_bn_exec: /usr/local/lib/libOPENFHEpke.so.1.3.1
 conv_bn_exec: /usr/local/lib/libOPENFHEbinfhe.so.1.3.1
 conv_bn_exec: /usr/local/lib/libOPENFHEcore.so.1.3.1
 conv_bn_exec: CMakeFiles/conv_bn_exec.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable conv_bn_exec"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/jwseo/openfhe_LeNet-5/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable conv_bn_exec"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/conv_bn_exec.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -156,6 +156,6 @@ CMakeFiles/conv_bn_exec.dir/clean:
 .PHONY : CMakeFiles/conv_bn_exec.dir/clean
 
 CMakeFiles/conv_bn_exec.dir/depend:
-	cd /home/ubuntu/LeNet5-with-OpenFHE/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/LeNet5-with-OpenFHE /home/ubuntu/LeNet5-with-OpenFHE /home/ubuntu/LeNet5-with-OpenFHE/build /home/ubuntu/LeNet5-with-OpenFHE/build /home/ubuntu/LeNet5-with-OpenFHE/build/CMakeFiles/conv_bn_exec.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jwseo/openfhe_LeNet-5/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jwseo/openfhe_LeNet-5 /home/jwseo/openfhe_LeNet-5 /home/jwseo/openfhe_LeNet-5/build /home/jwseo/openfhe_LeNet-5/build /home/jwseo/openfhe_LeNet-5/build/CMakeFiles/conv_bn_exec.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/conv_bn_exec.dir/depend
 
