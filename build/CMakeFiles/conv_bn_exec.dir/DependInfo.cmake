@@ -8,10 +8,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/jwseo/openfhe_LeNet-5/src/conv_bn_module.cpp" "CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o.d"
-  "/home/jwseo/openfhe_LeNet-5/src/fc_layer.cpp" "CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o.d"
-  "/home/jwseo/openfhe_LeNet-5/src/main.cpp" "CMakeFiles/conv_bn_exec.dir/src/main.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/main.cpp.o.d"
-  "/home/jwseo/openfhe_LeNet-5/src/relu.cpp" "CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o.d"
+  "/home/ubuntu/LeNet5-with-OpenFHE/src/conv_bn_module.cpp" "CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/conv_bn_module.cpp.o.d"
+  "/home/ubuntu/LeNet5-with-OpenFHE/src/fc_layer.cpp" "CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/fc_layer.cpp.o.d"
+  "/home/ubuntu/LeNet5-with-OpenFHE/src/main.cpp" "CMakeFiles/conv_bn_exec.dir/src/main.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/main.cpp.o.d"
+  "/home/ubuntu/LeNet5-with-OpenFHE/src/relu.cpp" "CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o" "gcc" "CMakeFiles/conv_bn_exec.dir/src/relu.cpp.o.d"
   )
 
 # Targets to which this target links.

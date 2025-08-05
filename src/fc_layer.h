@@ -19,3 +19,16 @@ void SaveDecryptedFCOutput(
     const Ciphertext<DCRTPoly>& ct_output,
     size_t out_dim,
     const std::string& filename);
+
+Ciphertext<DCRTPoly> DiagonalFC_CKKS(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_input,
+    const std::string& pathPrefix,
+    size_t in_dim, size_t out_dim,
+    size_t layerIndex,
+    const PublicKey<DCRTPoly>& pk);
+
+std::vector<std::vector<double>> LoadWeightsToDiagonals(
+    const std::string& filepath,
+    size_t in_dim, size_t out_dim,
+    size_t slotCount); 

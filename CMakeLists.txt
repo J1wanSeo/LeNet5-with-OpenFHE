@@ -20,13 +20,12 @@ project(demo CXX)
 set(CMAKE_CXX_STANDARD 17)
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
-find_package(OpenFHE CONFIG REQUIRED)
+### pass a value for OPENFHE_INSTALL_DIR if there is an issue locatig the correct package
+### EXAMPLE:
+###cmake -DOPENFHE_INSTALL_DIR=/home/ubuntu/openfhe-configurator/openfhe-staging/install/include
+set(OPENFHE_INSTALL_DIR "/home/ubuntu/openfhe-configurator/openfhe-staging/install/lib")
 
-if(OpenMP_CXX_FOUND)
-    message(STATUS "Found OpenMP")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
-
+find_package(OpenFHE CONFIG HINTS ${OPENFHE_INSTALL_DIR} REQUIRED)
 if(OpenFHE_FOUND)
     message(STATUS "FOUND PACKAGE OpenFHE")
     message(STATUS "OpenFHE Version: ${BASE_OPENFHE_VERSION}")
@@ -34,6 +33,8 @@ if(OpenFHE_FOUND)
     message(STATUS "OpenFHE include files location: ${OpenFHE_INCLUDE}")
     message(STATUS "OpenFHE lib files location: ${OpenFHE_LIBDIR}")
     message(STATUS "OpenFHE Native Backend size: ${OpenFHE_NATIVE_SIZE}")
+    message(STATUS "WITH_INTEL_HEXL:     ${OpenFHE_WITH_INTEL_HEXL}")
+    message(STATUS "INTEL_HEXL_HINT_DIR: ${OpenFHE_INTEL_HEXL_HINT_DIR}")
 else()
     message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
 endif()
@@ -44,8 +45,26 @@ include_directories(${OPENMP_INCLUDES})
 include_directories(${OpenFHE_INCLUDE})
 include_directories(${OpenFHE_INCLUDE}/third-party/include)
 include_directories(${OpenFHE_INCLUDE}/core)
+include_directories(${OpenFHE_INCLUDE}/core/include)
 include_directories(${OpenFHE_INCLUDE}/pke)
 include_directories(${OpenFHE_INCLUDE}/binfhe)
+
+if(OpenFHE_WITH_INTEL_HEXL)
+    find_package(HEXL 1.2.6 HINTS ${OpenFHE_INTEL_HEXL_HINT_DIR} REQUIRED)
+    if(NOT TARGET HEXL::hexl)
+        message(FATAL_ERROR, "Intel HEXL not found")
+    endif()
+
+    get_target_property(INTEL_HEXL_LOCATION HEXL::hexl LOCATION)
+    message(STATUS "INTEL_HEXL_LOCATION: ${INTEL_HEXL_LOCATION}")
+
+    get_target_property(INTEL_HEXL_INCLUDE_DIR HEXL::hexl INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "INTEL_HEXL_INCLUDE_DIR: ${INTEL_HEXL_INCLUDE_DIR}")
+
+    include_directories(${INTEL_HEXL_INCLUDE_DIR})
+endif()
+
+
 ### add directories for other OpenFHE modules as needed for your project
 
 link_directories(${OpenFHE_LIBDIR})
@@ -58,26 +77,18 @@ else()
     link_libraries(${OpenFHE_SHARED_LIBRARIES})
 endif()
 
-# include 디렉토리 추가
-include_directories(${CMAKE_SOURCE_DIR}/src)
-
 ### ADD YOUR EXECUTABLE(s) HERE
 ### add_executable(EXECUTABLE-NAME SOURCES)
 ###
 ### EXAMPLE:
-### add_executable(fc_test matrix_vector_mult.cpp)
-### add_executable(conv_test conv_layer_full_bn.cpp)
+### add_executable(test demo-simple-example.cpp)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(conv_bn_exec
     src/main.cpp
     src/conv_bn_module.cpp
     src/relu.cpp
     src/fc_layer.cpp
 )
-### add_executable(test
-###    src/test.cpp
-###    src/conv_bn_module.cpp
-###)
-###add_executable(fc_test 
-###    src/fc_layer.cpp
-###    src/conv_bn_module.cpp
-###)
+add_executable(test
+    src/test.cpp
+)

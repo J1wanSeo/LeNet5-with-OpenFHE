@@ -163,10 +163,10 @@ def model_save(epoch):
     np.save(f"lenet_weights_epoch({epoch+1})"+"/conv2_bias.npy", conv2_b)
 
     # conv3 weight, bias
-    conv3_w = model.conv3.weight.detach().cpu().numpy()
-    conv3_b = model.conv3.bias.detach().cpu().numpy()
-    np.save(f"lenet_weights_epoch({epoch+1})"+"/conv3_weight.npy", conv3_w)
-    np.save(f"lenet_weights_epoch({epoch+1})"+"/conv3_bias.npy", conv3_b)
+    # conv3_w = model.conv3.weight.detach().cpu().numpy()
+    # conv3_b = model.conv3.bias.detach().cpu().numpy()
+    # np.save(f"lenet_weights_epoch({epoch+1})"+"/conv3_weight.npy", conv3_w)
+    # np.save(f"lenet_weights_epoch({epoch+1})"+"/conv3_bias.npy", conv3_b)
     
     # fc1 weight, bias
     fc1_w = model.fc1.weight.detach().cpu().numpy()
@@ -179,6 +179,12 @@ def model_save(epoch):
     fc2_b = model.fc2.bias.detach().cpu().numpy()
     np.save(f"lenet_weights_epoch({epoch+1})"+"/fc2_weight.npy", fc2_w)
     np.save(f"lenet_weights_epoch({epoch+1})"+"/fc2_bias.npy", fc2_b)
+
+    # fc3 weight, bias
+    fc3_w = model.fc3.weight.detach().cpu().numpy()
+    fc3_b = model.fc3.bias.detach().cpu().numpy()
+    np.save(f"lenet_weights_epoch({epoch+1})"+"/fc3_weight.npy", fc3_w)
+    np.save(f"lenet_weights_epoch({epoch+1})"+"/fc3_bias.npy", fc3_b)
 
 
     # === BatchNorm 저장 ===
@@ -195,8 +201,8 @@ def model_save(epoch):
 
     save_bn(model.bn1, "conv1")
     save_bn(model.bn2, "conv2")
-    save_bn(model.bn3, "conv3")
-    save_bn(model.bn4, "fc1")  # fc1 뒤에도 BN 붙어있다면
+    save_bn(model.bn3, "fc1")
+    save_bn(model.bn4, "fc2")  # fc1 뒤에도 BN 붙어있다면
 
     print("All weights and biases saved to ./lenet_weights_epoch()")
 
@@ -260,21 +266,23 @@ class LeNet5(nn.Module):
         # Convolution layers
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.conv3 = nn.Conv2d(16, 120, 5)
+        # self.conv3 = nn.Conv2d(16, 120, 5)
 
         # LayerNorm for conv layers
         # normalized_shape = output channel dimension
         self.bn1 = nn.BatchNorm2d(6)   # conv1 output size before pooling (assuming input 32x32)
         self.bn2 = nn.BatchNorm2d(16)  # conv2 output size before pooling
-        self.bn3 = nn.BatchNorm2d(120)
+        # self.bn3 = nn.BatchNorm2d(120)
 
         # Fully connected layers
-        self.fc1 = nn.Linear(120, 84)
-        self.fc2 = nn.Linear(84, 10)
+        self.fc1 = nn.Linear(400, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
         # LayerNorm for fc layers
+        self.bn3 = nn.BatchNorm1d(120)
         self.bn4 = nn.BatchNorm1d(84)
-        
+
         self.register_buffer('mean', torch.tensor(0.1307))
         self.register_buffer('std', torch.tensor(0.3081))
 
@@ -302,20 +310,25 @@ class LeNet5(nn.Module):
         x = act(x)
         x = F.avg_pool2d(x, 2)
         
-        x = self.conv3(x)   # (batch,120,1,1)
-        x = self.bn3(x)
-        x = act(x)
+        # x = self.conv3(x)   # (batch,120,1,1)
+        # x = self.bn3(x)
+        # x = act(x)
 
         # Flatten
-        x = x.view(-1, 120)
+        x = x.view(-1, 400)
 
         # FC1 + LayerNorm + Activation
         x = self.fc1(x)
-        x = self.bn4(x)
+        x = self.bn3(x)
         x = act(x)
 
         # FC3 (logits)
         x = self.fc2(x)
+        x = self.bn4(x)
+        x = act(x)
+
+        x = self.fc3(x)
+
         return x
 
     def num_flat_features(self, x):

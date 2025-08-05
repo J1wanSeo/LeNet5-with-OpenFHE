@@ -8,6 +8,19 @@
 #include <iostream>
 
 
+Ciphertext<DCRTPoly> ApproxReLU4_linear(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
+    // size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
+
+    // x^2
+
+    
+
+    // EvalAdd 전에 level 로그 찍기
+    // std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
+
+    return ct_x;
+}
+
 Ciphertext<DCRTPoly> ApproxReLU4_square(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
     // size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
 
@@ -94,9 +107,10 @@ std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
         //           << ", Scale: " << ct->GetScalingFactor() << std::endl;
 
         Ciphertext<DCRTPoly> out;
-        if (mode == 0)       out = ApproxReLU4_square(cc, ct);
-        else if (mode == 1)  out = ApproxReLU4_cryptonet(cc, ct);
-        else if (mode == 2)  out = ApproxReLU4_quad(cc, ct);
+        if (mode == 0)       out = ApproxReLU4_linear(cc, ct);
+        else if (mode == 1)  out = ApproxReLU4_square(cc, ct);
+        else if (mode == 2)  out = ApproxReLU4_cryptonet(cc, ct);
+        else if (mode == 3)  out = ApproxReLU4_quad(cc, ct);
         else                 out = ApproxReLU4_Student(cc, ct);
 
         activated.push_back(out);

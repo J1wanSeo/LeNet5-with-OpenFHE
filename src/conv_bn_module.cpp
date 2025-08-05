@@ -1,10 +1,15 @@
 // conv_bn_module.cpp
 #include "conv_bn_module.h"
+#include <chrono>
+#include <mutex>
+#include <omp.h>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <set>
 #include <iostream>
+#include <thread>
+#include <future>
 
 std::vector<double> LoadFromTxt(const std::string& filename) {
     std::ifstream infile(filename);
@@ -19,13 +24,42 @@ std::vector<double> LoadFromTxt(const std::string& filename) {
     return data;
 }
 
+// inline double TimeNow() {
+//     return std::chrono::duration<double>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+// }
+
 std::vector<int> GenerateRotationIndices(size_t filterH, size_t filterW, size_t inputW, size_t interleave) {
     std::set<int> rotSet;
-    for (size_t dy = 0; dy < filterH; dy++)
-        for (size_t dx = 0; dx < filterW; dx++)
-            rotSet.insert(dy * inputW * interleave + dx * interleave);
+    for (size_t dy = 0; dy < filterH; dy++) {
+        for (size_t dx = 0; dx < filterW; dx++) {
+        int rotAmount = dy * inputW * interleave + dx * interleave;
+        rotSet.insert(rotAmount);
+        // rotSet.insert(-rotAmount);
+        }
+    }
     return std::vector<int>(rotSet.begin(), rotSet.end());
 }
+
+// 1) 유효 슬롯 원위치 인덱스 (행, 열 고려)
+
+// 2) flatten 내부 압축에 필요한 rotation key (-validIndices[i], i>=1)
+std::vector<int> GetFlattenRotationIndices(const std::vector<int>& validIndices) {
+    std::vector<int> rotKeys;
+    for (size_t i = 1; i < validIndices.size(); i++) {
+        rotKeys.push_back((validIndices[i]-i));
+    }
+    return rotKeys;
+}
+
+// 3) 여러 ciphertext 합칠 때 필요한 rotation key (perCtValidCount * i)
+std::vector<int> GetConcatRotationIndices(size_t numCts, size_t perCtValidCount) {
+    std::vector<int> rotKeys;
+    for (size_t i = 1; i < numCts; ++i) {
+        rotKeys.push_back(-static_cast<int>(perCtValidCount * i));
+    }
+    return rotKeys;
+}
+
 
 Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
     CryptoContext<DCRTPoly> cc,
@@ -42,7 +76,9 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
     size_t outH = (inputH - filterH) / (stride *interleave) + 1;
     size_t outW = (inputW - filterW) / (stride *interleave) + 1;
 
-    std::vector<Ciphertext<DCRTPoly>> partials;
+    size_t total = filterH * filterW;
+    std::vector<Ciphertext<DCRTPoly>> partials(total);
+    // std::vector<Ciphertext<DCRTPoly>> partials;
 
     // std::vector<double> bias_vector(slotCount, 0.0);
     std::vector<double> mask(slotCount, 0.0);
@@ -59,25 +95,23 @@ Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
 
     auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
 
-    for (size_t dy = 0; dy < filterH; dy++) {
-        for (size_t dx = 0; dx < filterW; dx++) {
-            size_t idx = dy * filterW + dx;
-            int rotAmount = dy * inputW * interleave + dx * interleave;
-            auto rotated = cc->EvalRotate(ct_input, rotAmount);           
+    #pragma omp parallel for
+    for (size_t i = 0; i < total; i++) {
+        size_t dy = i / filterW;
+        size_t dx = i % filterW;
 
-            auto masked_rotated = cc->EvalMult(rotated, pt_mask);
-            masked_rotated = cc->Rescale(masked_rotated);
+        int rotAmount = dy * inputW * interleave + dx * interleave;
+        auto rotated = cc->EvalRotate(ct_input, rotAmount);
 
-            auto ct_weighted = cc->EvalMult(masked_rotated, filter[idx]);
-            ct_weighted = cc->Rescale(ct_weighted);
+        auto masked_rotated = cc->EvalMult(rotated, pt_mask);
 
-            partials.push_back(ct_weighted);
-        }
+        auto ct_weighted = cc->EvalMult(masked_rotated, filter[i]);
+
+        partials[i] = ct_weighted;
     }
+
     Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
     
-    // auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vector);
-    // result = cc->EvalAdd(result, pt_bias);
     result = cc->EvalMult(result, pt_mask);
 
     return result;
@@ -135,31 +169,194 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     // size_t outH = (inputH - filterH) / stride + 1;
     // size_t outW = (inputW - filterW) / stride + 1;
 
-    std::vector<Ciphertext<DCRTPoly>> outputs;
-    #pragma omp parallel for
+    std::vector<Ciphertext<DCRTPoly>> outputs(out_channels);
+
+    std::mutex cout_mutex;
+
+    #pragma omp parallel for schedule(dynamic)
     for (size_t out_ch = 0; out_ch < out_channels; out_ch++) {
-        Ciphertext<DCRTPoly> ct_sum;
+        Ciphertext<DCRTPoly> ct_sum; // lazy-init
+        double t_start = TimeNow();
         for (size_t in_ch = 0; in_ch < in_channels; in_ch++) {
             size_t base = (out_ch * in_channels + in_ch) * filterH * filterW;
-            std::vector<double> filter(filters.begin() + base, filters.begin() + base + filterH * filterW);
-
-            auto ct = GeneralConv2D_CKKS(cc, ct_input_channels[in_ch], filter, 0.0, inputH, inputW, filterH, filterW, stride, interleave, publicKey);
-
-            ct_sum = (!in_ch) ? ct : cc->EvalAdd(ct_sum, ct);
-
+            const std::vector<double> filter(
+                filters.begin() + base,
+                filters.begin() + base + filterH * filterW
+            );
+            // ===== 개선 핵심: 스파스 필터 skip하여 rotation 줄이기 =====
+            bool first_partial = true;
+            Ciphertext<DCRTPoly> ct_filtered_sum; // 각 input-ch에 대한 partial sum
+            for (size_t i = 0; i < filter.size(); i++) {
+                double w = filter[i];
+                if (std::abs(w) < 1e-8) continue; // 0 weight skip
+                size_t dy = i / filterW;
+                size_t dx = i % filterW;
+                int rotAmount = static_cast<int>(dy * inputW * interleave + dx * interleave);
+                auto rotated = cc->EvalRotate(ct_input_channels[in_ch], rotAmount);
+                // Masking & weight를 동시에 곱해서 바로 partial에 누적
+                auto masked = cc->EvalMult(rotated, w); // w: double -> Plaintext 자동 처리
+                if (first_partial) {
+                    ct_filtered_sum = masked;
+                    first_partial = false;
+                } else {
+                    ct_filtered_sum = cc->EvalAdd(ct_filtered_sum, masked);
+                }
+            }
+        if (!first_partial) {
+            // bias, bn은 기존대로 진행
+            if (in_ch == 0) {
+                ct_sum = ct_filtered_sum;
+            } else {
+                ct_sum = cc->EvalAdd(ct_sum, ct_filtered_sum);
+            }
         }
+    }
+
+        double t_conv_end = TimeNow();
 
         auto bias = biases[out_ch];
         std::vector<double> bias_vec(cc->GetEncodingParams()->GetBatchSize(), bias);
         auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vec);
         ct_sum = cc->EvalAdd(ct_sum, pt_bias);
 
+        double t_bias_end = TimeNow();
 
         auto ct_bn = GeneralBatchNorm_CKKS(cc, ct_sum, gammas[out_ch], betas[out_ch], means[out_ch], vars[out_ch], cc->GetEncodingParams()->GetBatchSize());
-        outputs.push_back(ct_bn);
+        outputs[out_ch] = ct_bn;
+
+        double t_bn_end = TimeNow();
+
+        {
+            std::lock_guard<std::mutex> lock(cout_mutex);
+            std::cout << "[ConvBnLayer] OutCh " << out_ch
+                      << " Conv elapsed: " << (t_conv_end - t_start) << " sec, "
+                      << "Bias elapsed: " << (t_bias_end - t_conv_end) << " sec, "
+                      << "BatchNorm elapsed: " << (t_bn_end - t_bias_end) << " sec"
+                      << std::endl;
+        }
     }
+
     return outputs;
 }
+
+// 1) 유효 슬롯 인덱스 출력 포함
+std::vector<int> GetValidSlotIndices(size_t rows, size_t cols, size_t colStride) {
+    std::vector<int> validIndices;
+    for (size_t r = 0; r < rows; r+= colStride) {
+        for (size_t c = 0; c < cols; c += colStride) {
+            int idx = static_cast<int>(r * cols + c);
+            validIndices.push_back(idx);
+        }
+    }
+
+    // std::cout << "[DEBUG] GetValidSlotIndices: total valid slots = " << validIndices.size() << std::endl;
+    // // 첫 10개만 출력 (필요하면 늘리거나 줄이기)
+    // std::cout << "[DEBUG] validIndices sample: ";
+    // for (size_t i = 0; i < std::min<size_t>(10, validIndices.size()); ++i) {
+    //     std::cout << validIndices[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    return validIndices;
+}
+
+// 2) CompressValidSlots에 진입과 주요 작업 로그 추가
+Ciphertext<DCRTPoly> CompressValidSlots(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct,
+    const std::vector<int>& validIndices) {
+
+    // std::cout << "[DEBUG] CompressValidSlots: start, validIndices size = " << validIndices.size() << std::endl;
+
+    size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
+    Ciphertext<DCRTPoly> compressed;
+
+    for (size_t i = 0; i < validIndices.size(); ++i) {
+        int src = validIndices[i];
+        if (src < 0 || src >= (int)slotCount) {
+            // std::cout << "[WARN] CompressValidSlots: valid index out of range: " << src << std::endl;
+            continue;
+        }
+
+        // 1. 슬롯 하나만 살리는 마스크
+        std::vector<double> mask(slotCount, 0.0);
+        mask[src] = 1.0;
+        auto pt_one = cc->MakeCKKSPackedPlaintext(mask);
+
+        // 2. 해당 슬롯만 남긴 후
+        auto ct_single = cc->EvalMult(ct, pt_one);
+
+        // 3. i번 슬롯으로 이동시키기
+        int rotAmount = src - static_cast<int>(i); // 좌측으로 rotAmount만큼 회전
+        auto ct_rotated = cc->EvalRotate(ct_single, rotAmount);
+
+        // 4. 누적 합
+        if (i == 0)
+            compressed = ct_rotated;
+        else
+            compressed = cc->EvalAdd(compressed, ct_rotated);
+    }
+
+    // std::cout << "[DEBUG] CompressValidSlots: completed compression" << std::endl;
+    return compressed;
+}
+
+
+// 3) ConcatenateCiphertexts에 로그 추가
+Ciphertext<DCRTPoly> ConcatenateCiphertexts(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& cts,
+    size_t perCtValidCount) {
+
+    // std::cout << "[DEBUG] ConcatenateCiphertexts: start, number of ciphertexts = " << cts.size()
+    //           << ", perCtValidCount = " << perCtValidCount << std::endl;
+
+    Ciphertext<DCRTPoly> result = cts[0];
+    // std::cout << "[DEBUG] ConcatenateCiphertexts: initialized result with first ciphertext" << std::endl;
+
+    for (size_t i = 1; i < cts.size(); ++i) {
+        int rot = -static_cast<int>(perCtValidCount * i); // rotate to right
+        // std::cout << "[DEBUG] ConcatenateCiphertexts: rotating ciphertext " << i
+        //           << " by " << rot << std::endl;
+        auto shifted = cc->EvalRotate(cts[i], rot);
+        result = cc->EvalAdd(result, shifted);
+    }
+
+    // std::cout << "[DEBUG] ConcatenateCiphertexts: completed concatenation" << std::endl;
+    return result;
+}
+
+// 4) Flatten 전체 프로세스에 단계별 로그 추가
+Ciphertext<DCRTPoly> FlattenCiphertexts(
+    CryptoContext<DCRTPoly> cc,
+    const std::vector<Ciphertext<DCRTPoly>>& ct_vec,
+    const PrivateKey<DCRTPoly>& secretKey // remove after debugging
+) {
+
+    // std::cout << "[DEBUG] FlattenCiphertexts: start, number of input ciphertexts = " << ct_vec.size() << std::endl;
+
+    std::vector<int> validIndices = GetValidSlotIndices(20, 20, 4);
+
+    std::vector<Ciphertext<DCRTPoly>> compressed_cts(ct_vec.size());
+    #pragma omp parallel for
+    for (size_t i = 0; i < (int)ct_vec.size(); i++) {
+        // std::cout << "[DEBUG] FlattenCiphertexts: compressing ciphertext " << i << std::endl;
+        compressed_cts[i] = CompressValidSlots(cc, ct_vec[i], validIndices);
+        // if(i == 1){
+        // std::vector<Ciphertext<DCRTPoly>> ct_test = {compressed_cts[i] };
+        // SaveDecryptedConvOutput(cc, secretKey, ct_test, 1, 20 * 20, "compressed");
+        // }
+    }
+
+    size_t perCtValidCount = validIndices.size();
+    // std::cout << "[DEBUG] FlattenCiphertexts: per ciphertext valid slot count = " << perCtValidCount << std::endl;
+
+    auto flattened = ConcatenateCiphertexts(cc, compressed_cts, perCtValidCount);
+
+    // std::cout << "[DEBUG] FlattenCiphertexts: completed flattening" << std::endl;
+    return flattened;
+}
+
 
 std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
     CryptoContext<DCRTPoly> cc,
@@ -187,30 +384,54 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
     double weight = 0.25;
 
     // 채널별 AvgPool 수행
-    std::vector<Ciphertext<DCRTPoly>> pooled;
+    std::vector<Ciphertext<DCRTPoly>> pooled(ct_channels.size());
+
     #pragma omp parallel for
-    for (const auto& ct_input : ct_channels) {
+    for (size_t i = 0; i < ct_channels.size(); i++) {
+        const auto& ct_input = ct_channels[i];
         std::vector<Ciphertext<DCRTPoly>> partials;
 
         for (size_t dy = 0; dy < filterH; dy++) {
             for (size_t dx = 0; dx < filterW; dx++) {
                 int rotAmount = dy * inputW * interleave + dx * interleave;
-                auto rotated = cc->EvalRotate(ct_input, rotAmount); // 입력 데이터 내에서 filter 크기만큼 데이터를 추출함
+                auto rotated = cc->EvalRotate(ct_input, rotAmount);
 
                 auto masked_rotated = cc->EvalMult(rotated, pt_mask);
-                masked_rotated = cc->Rescale(masked_rotated);
+                // masked_rotated = cc->Rescale(masked_rotated);
 
                 auto ct_weighted = cc->EvalMult(masked_rotated, weight);
-                ct_weighted = cc->Rescale(ct_weighted);
+                // ct_weighted = cc->Rescale(ct_weighted);
 
                 partials.push_back(ct_weighted);
             }
         }
 
-        // partial sum → 최종 채널 avgpool 결과
-        Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
-        pooled.push_back(result);
+        pooled[i] = cc->EvalAddMany(partials);
     }
+
+    ///
+    // for (const auto& ct_input : ct_channels) {
+    //     std::vector<Ciphertext<DCRTPoly>> partials;
+
+    //     for (size_t dy = 0; dy < filterH; dy++) {
+    //         for (size_t dx = 0; dx < filterW; dx++) {
+    //             int rotAmount = dy * inputW * interleave + dx * interleave;
+    //             auto rotated = cc->EvalRotate(ct_input, rotAmount); // 입력 데이터 내에서 filter 크기만큼 데이터를 추출함
+
+    //             auto masked_rotated = cc->EvalMult(rotated, pt_mask);
+    //             masked_rotated = cc->Rescale(masked_rotated);
+
+    //             auto ct_weighted = cc->EvalMult(masked_rotated, weight);
+    //             ct_weighted = cc->Rescale(ct_weighted);
+
+    //             partials.push_back(ct_weighted);
+    //         }
+    //     }
+
+    //     // partial sum → 최종 채널 avgpool 결과
+    //     Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
+    //     pooled.push_back(result);
+    // }
 
     return pooled;
 }
@@ -299,10 +520,11 @@ std::vector<Ciphertext<DCRTPoly>> ReAlignConvolutionResult_MultiChannel(
     int outputH, int outputW,
     int interleave
 ) {
-    std::vector<Ciphertext<DCRTPoly>> ReAligned;
+    // std::vector<Ciphertext<DCRTPoly>> ReAligned;
+    std::vector<Ciphertext<DCRTPoly>> ReAligned(ct_channels.size());
     #pragma omp parallel for
-    for (const auto& ct : ct_channels) {
-        ReAligned.push_back(ReAlignConvolutionResult(cc, ct, inputH, inputW, outputH, outputW, interleave));
+    for (size_t i = 0; i < ct_channels.size(); ++i) {
+        ReAligned[i] = ReAlignConvolutionResult(cc, ct_channels[i], inputH, inputW, outputH, outputW, interleave);
     }
     return ReAligned;
 }

@@ -8,7 +8,9 @@
 using namespace lbcrypto;
 
 // ================== Approximate ReLU Variants ==================
-
+Ciphertext<DCRTPoly> ApproxReLU4_linear(
+    CryptoContext<DCRTPoly> cc,
+    const Ciphertext<DCRTPoly>& ct_x);
 // 단순 x^2
 Ciphertext<DCRTPoly> ApproxReLU4_square(
     CryptoContext<DCRTPoly> cc,

@@ -36,14 +36,15 @@ def load_weights_from_npy(model, folder_path):
     model.conv2.weight.data = torch.from_numpy(np.load(f"{folder_path}/conv2_weight.npy"))
     model.conv2.bias.data = torch.from_numpy(np.load(f"{folder_path}/conv2_bias.npy"))
 
-    model.conv3.weight.data = torch.from_numpy(np.load(f"{folder_path}/conv3_weight.npy"))
-    model.conv3.bias.data = torch.from_numpy(np.load(f"{folder_path}/conv3_bias.npy"))
 
     model.fc1.weight.data = torch.from_numpy(np.load(f"{folder_path}/fc1_weight.npy"))
     model.fc1.bias.data = torch.from_numpy(np.load(f"{folder_path}/fc1_bias.npy"))
 
     model.fc2.weight.data = torch.from_numpy(np.load(f"{folder_path}/fc2_weight.npy"))
     model.fc2.bias.data = torch.from_numpy(np.load(f"{folder_path}/fc2_bias.npy"))
+
+    model.fc3.weight.data = torch.from_numpy(np.load(f"{folder_path}/fc3_weight.npy"))
+    model.fc3.bias.data = torch.from_numpy(np.load(f"{folder_path}/fc3_bias.npy"))
 
     def load_bn(layer, prefix):
         layer.weight.data = torch.from_numpy(np.load(f"{folder_path}/{prefix}_bn_gamma.npy"))
@@ -53,8 +54,9 @@ def load_weights_from_npy(model, folder_path):
 
     load_bn(model.bn1, "conv1")
     load_bn(model.bn2, "conv2")
-    load_bn(model.bn3, "conv3")
-    load_bn(model.bn4, "fc1")
+    load_bn(model.bn3, "fc1")
+    load_bn(model.bn4, "fc2")
+    # load_bn(model.bn4, "fc1")
 
     print(f"Weights and BN parameters loaded from {folder_path}")
 
@@ -198,21 +200,23 @@ class LeNet5(nn.Module):
         # Convolution layers
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.conv3 = nn.Conv2d(16, 120, 5)
+        # self.conv3 = nn.Conv2d(16, 120, 5)
 
         # LayerNorm for conv layers
         # normalized_shape = output channel dimension
         self.bn1 = nn.BatchNorm2d(6)   # conv1 output size before pooling (assuming input 32x32)
         self.bn2 = nn.BatchNorm2d(16)  # conv2 output size before pooling
-        self.bn3 = nn.BatchNorm2d(120)
+        # self.bn3 = nn.BatchNorm2d(120)
 
         # Fully connected layers
-        self.fc1 = nn.Linear(120, 84)
-        self.fc2 = nn.Linear(84, 10)
+        self.fc1 = nn.Linear(400, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
         # LayerNorm for fc layers
+        self.bn3 = nn.BatchNorm1d(120)
         self.bn4 = nn.BatchNorm1d(84)
-        
+
         self.register_buffer('mean', torch.tensor(0.1307))
         self.register_buffer('std', torch.tensor(0.3081))
 
@@ -222,7 +226,7 @@ class LeNet5(nn.Module):
         elif self.training:
             act = F.relu
         else:
-            act = quad_relu_polynomials['CryptoNet'][0]
+            act = quad_relu_polynomials[2]['CryptoNet']
             
         # input normalization
         # x = x / 255.0
@@ -240,20 +244,25 @@ class LeNet5(nn.Module):
         x = act(x)
         x = F.avg_pool2d(x, 2)
         
-        x = self.conv3(x)   # (batch,120,1,1)
-        x = self.bn3(x)
-        x = act(x)
+        # x = self.conv3(x)   # (batch,120,1,1)
+        # x = self.bn3(x)
+        # x = act(x)
 
         # Flatten
-        x = x.view(-1, 120)
+        x = x.view(-1, 400)
 
         # FC1 + LayerNorm + Activation
         x = self.fc1(x)
-        x = self.bn4(x)
+        x = self.bn3(x)
         x = act(x)
 
         # FC3 (logits)
         x = self.fc2(x)
+        x = self.bn4(x)
+        x = act(x)
+
+        x = self.fc3(x)
+
         return x
 
     def num_flat_features(self, x):
