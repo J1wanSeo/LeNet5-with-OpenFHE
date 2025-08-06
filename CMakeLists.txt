@@ -89,6 +89,6 @@ add_executable(conv_bn_exec
     src/relu.cpp
     src/fc_layer.cpp
 )
-add_executable(test
-    src/test.cpp
-)
+###add_executable(test
+###    src/test.cpp
+###)

@@ -129,19 +129,6 @@ conv_bn_exec/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/build
 .PHONY : conv_bn_exec/fast
 
-#=============================================================================
-# Target rules for targets named test
-
-# Build rule for target.
-test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
-.PHONY : test
-
-# fast build rule for target.
-test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
-.PHONY : test/fast
-
 src/conv_bn_module.o: src/conv_bn_module.cpp.o
 .PHONY : src/conv_bn_module.o
 
@@ -238,30 +225,6 @@ src/relu.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conv_bn_exec.dir/build.make CMakeFiles/conv_bn_exec.dir/src/relu.cpp.s
 .PHONY : src/relu.cpp.s
 
-src/test.o: src/test.cpp.o
-.PHONY : src/test.o
-
-# target to build an object file
-src/test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.o
-.PHONY : src/test.cpp.o
-
-src/test.i: src/test.cpp.i
-.PHONY : src/test.i
-
-# target to preprocess a source file
-src/test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.i
-.PHONY : src/test.cpp.i
-
-src/test.s: src/test.cpp.s
-.PHONY : src/test.s
-
-# target to generate assembly for a file
-src/test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/test.cpp.s
-.PHONY : src/test.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -271,7 +234,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... conv_bn_exec"
-	@echo "... test"
 	@echo "... src/conv_bn_module.o"
 	@echo "... src/conv_bn_module.i"
 	@echo "... src/conv_bn_module.s"
@@ -284,9 +246,6 @@ help:
 	@echo "... src/relu.o"
 	@echo "... src/relu.i"
 	@echo "... src/relu.s"
-	@echo "... src/test.o"
-	@echo "... src/test.i"
-	@echo "... src/test.s"
 .PHONY : help
 
 
