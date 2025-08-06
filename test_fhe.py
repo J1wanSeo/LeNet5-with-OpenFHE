@@ -14,8 +14,8 @@ def load_txt_tensor(path, shape):
 # input_image = torch.rand(1, 1, 32, 32, dtype=torch.float32).view(1, 1, 32, 32)
 # np.savetxt("./lenet_weights_epoch(10)/input_image.txt", input_image.view(1, -1).numpy(), delimiter=",")
 
-base_path = "./lenet_weights_epoch(10)"
-input_tensor = load_txt_tensor("./lenet_weights_epoch(10)/input_image.txt", (1, 1, 32, 32))
+base_path = "./pytorch_LeNet5/parameters_standard"
+input_tensor = load_txt_tensor("./input_image.txt", (1, 1, 32, 32))
 
 # Conv1 params
 weight1 = load_txt_tensor(f"{base_path}/conv1_weight.txt", (6, 1, 5, 5))

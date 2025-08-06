@@ -21,21 +21,28 @@ void GenerateAllRotationKeys(
     const std::vector<int>& validIndices,
     size_t numCts);
 
+int CalculateMultiplicativeDepth(int relu_mode);
+
 std::vector<int> GetFlattenRotationIndices(const std::vector<int>& validIndices);
 
 std::vector<int> GetConcatRotationIndices(size_t numCts, size_t perCtValidCount);
 // Conv2D
-Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
+// Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
+//     CryptoContext<DCRTPoly> cc,
+//     const Ciphertext<DCRTPoly>& ct_input,
+//     const std::vector<double>& filter,
+//     double bias,
+//     size_t inputH, size_t inputW,
+//     size_t filterH, size_t filterW,
+//     size_t stride,
+//     size_t interleave,
+//     const PublicKey<DCRTPoly>& pk);
+Ciphertext<DCRTPoly> RotateByIndex(
     CryptoContext<DCRTPoly> cc,
-    const Ciphertext<DCRTPoly>& ct_input,
-    const std::vector<double>& filter,
-    double bias,
-    size_t inputH, size_t inputW,
-    size_t filterH, size_t filterW,
-    size_t stride,
-    size_t interleave,
-    const PublicKey<DCRTPoly>& pk);
-
+    const Ciphertext<DCRTPoly>& ct,
+    int rot,              // 음수 혹은 양수 회전 인덱스
+    int slotCount
+);
 // BatchNorm
 Ciphertext<DCRTPoly> GeneralBatchNorm_CKKS(
     CryptoContext<DCRTPoly> cc,
@@ -57,19 +64,6 @@ std::vector<Ciphertext<DCRTPoly>> ConvBnLayer(
     size_t interleave,
     const PublicKey<DCRTPoly>& publicKey,
     const PrivateKey<DCRTPoly>& secretKey);
-
-Ciphertext<DCRTPoly> ComputeSumOverInChannels_Parallel(
-    CryptoContext<DCRTPoly> cc,
-    const std::vector<Ciphertext<DCRTPoly>>& ct_input_channels,
-    const std::vector<double>& filters_for_all_in_ch, // (in_channels * filterH * filterW)
-    size_t in_channels,
-    size_t filterH,
-    size_t filterW,
-    size_t inputH,
-    size_t inputW,
-    size_t stride,
-    size_t interleave,
-    const PublicKey<DCRTPoly>& publicKey);
 
 Ciphertext<DCRTPoly> ConcatenateCiphertexts(
     CryptoContext<DCRTPoly> cc,
@@ -126,7 +120,4 @@ Ciphertext<DCRTPoly> ReAlignConvolutionResult(
 std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS_SequentialPack(
     CryptoContext<DCRTPoly> cc,
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
-    size_t inputH, size_t inputW);
-
-std::vector<int> GenerateAvgPool2x2SequentialPackRotationIndices(
     size_t inputH, size_t inputW);

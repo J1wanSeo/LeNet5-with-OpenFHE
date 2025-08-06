@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <omp.h>
 
 
 // 일반적인 FC Layer (한 번에 out_dim 크기까지 합침)
@@ -32,6 +33,9 @@ Ciphertext<DCRTPoly> GeneralFC_CKKS(
     auto means   = LoadFromTxt(meanPath);
     auto vars    = LoadFromTxt(varPath);
 
+    std::vector<Ciphertext<DCRTPoly>> partial_outputs(out_dim);
+
+    #pragma omp parallel for
     for (size_t i = 0; i < out_dim; i++) {
         std::vector<double> w_i(weights.begin() + i * in_dim, weights.begin() + (i + 1) * in_dim);
 
@@ -53,7 +57,7 @@ Ciphertext<DCRTPoly> GeneralFC_CKKS(
         auto ct_fc_bn = GeneralBatchNorm_CKKS(cc, ct_neuron, gammas[i], betas[i], means[i], vars[i], cc->GetEncodingParams()->GetBatchSize());
 
         // i번째 위치로 shift
-        auto ct_shifted = cc->EvalRotate(ct_fc_bn, -(int)i);
+        auto ct_shifted = RotateByIndex(cc, ct_fc_bn, -(int)i, cc->GetEncodingParams()->GetBatchSize()); //->EvalRotate(ct_fc_bn, -(int)i);
         // ct_shifted = cc->Rescale(ct_shifted);   
 
         std::vector<double> mask(cc->GetEncodingParams()->GetBatchSize(), 0.0);
@@ -62,7 +66,16 @@ Ciphertext<DCRTPoly> GeneralFC_CKKS(
         ct_shifted = cc->EvalMult(ct_shifted, pt_mask);
         // ct_shifted = cc->Rescale(ct_shifted);
 
-        ct_output = (i == 0) ? ct_shifted : cc->EvalAdd(ct_output, ct_shifted);
+        partial_outputs[i] = ct_shifted;
+        
+    }
+
+    for (size_t i = 0; i < out_dim; i++) {
+        if (i == 0) {
+            ct_output = partial_outputs[i];
+        } else {
+            ct_output = cc->EvalAdd(ct_output, partial_outputs[i]);
+        }
     }
 
     return ct_output;
@@ -93,6 +106,9 @@ Ciphertext<DCRTPoly> GeneralFC_wo_BN_CKKS(
     // auto means   = LoadFromTxt(meanPath);
     // auto vars    = LoadFromTxt(varPath);
 
+    std::vector<Ciphertext<DCRTPoly>> partial_outputs(out_dim);
+
+    #pragma omp parallel for
     for (size_t i = 0; i < out_dim; i++) {
         std::vector<double> w_i(weights.begin() + i * in_dim, weights.begin() + (i + 1) * in_dim);
 
@@ -114,7 +130,7 @@ Ciphertext<DCRTPoly> GeneralFC_wo_BN_CKKS(
         // auto ct_fc_bn = GeneralBatchNorm_CKKS(cc, ct_neuron, gammas[i], betas[i], means[i], vars[i], cc->GetEncodingParams()->GetBatchSize());
 
         // i번째 위치로 shift
-        auto ct_shifted = cc->EvalRotate(ct_neuron, -(int)i);
+        auto ct_shifted = RotateByIndex(cc, ct_neuron, -(int)i, cc->GetEncodingParams()->GetBatchSize()); //cc->EvalRotate(ct_neuron, -(int)i);
         // ct_shifted = cc->Rescale(ct_shifted);   
 
         std::vector<double> mask(cc->GetEncodingParams()->GetBatchSize(), 0.0);
@@ -123,7 +139,15 @@ Ciphertext<DCRTPoly> GeneralFC_wo_BN_CKKS(
         ct_shifted = cc->EvalMult(ct_shifted, pt_mask);
         // ct_shifted = cc->Rescale(ct_shifted);
 
-        ct_output = (i == 0) ? ct_shifted : cc->EvalAdd(ct_output, ct_shifted);
+        partial_outputs[i] = ct_shifted;
+    }
+
+    for (size_t i = 0; i < out_dim; i++) {
+        if (i == 0) {
+            ct_output = partial_outputs[i];
+        } else {
+            ct_output = cc->EvalAdd(ct_output, partial_outputs[i]);
+        }
     }
 
     return ct_output;
