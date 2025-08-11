@@ -161,8 +161,9 @@ void SaveDecryptedFCOutput(
     const std::string& filename) {
 
     Plaintext pt;
+
     cc->Decrypt(sk, ct_output, &pt);
-    pt->SetLength(out_dim);
+    // pt->SetLength(out_dim);
     auto vec = pt->GetRealPackedValue();
     std::string filename_out = filename +  ".txt";
     std::ofstream out(filename_out);

@@ -49,7 +49,7 @@ def run_cpp_fhe_inference():
                                   transform=transforms_val, download=True)
 
     model = inference_only.LeNet5().to(DEVICE)
-    act_fn = inference_only.select_activation()
+    act_fn, relu_mode = inference_only.select_activation()
     inference_only.load_weights_from_npy(model, "./pytorch_LeNet5/parameters_standard")
 
     # 1) 무작위 샘플 이미지 저장 (CPP 입력용)
@@ -59,7 +59,7 @@ def run_cpp_fhe_inference():
     # 2) CPP 빌드 및 실행 (autotest.sh)
     print("[INFO] Running autotest.sh for CPP FHE inference...")
     try:
-        subprocess.run(["bash", "./autotest.sh"], check=True)
+        subprocess.run(["bash", "./autotest.sh", str(relu_mode)], check=True)
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] autotest.sh execution failed: {e}")
         return None

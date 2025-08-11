@@ -480,7 +480,7 @@ int CalculateMultiplicativeDepth(int relu_mode) {
     depth += 2 * 2;   // fc + bn
     depth += 1 * 2;   // fc
     depth += 1 * 2;   // flatten
-
+    depth += 1;
     return depth;
 }
 

@@ -166,7 +166,7 @@ def select_activation():
     print()
     print_boxed_message(" Selected Activation Function ", [f"Name: {selected_key}", f"Formula: {desc}"])
     print()
-    return func
+    return func, choice_int
 
 
 def inference(model, data_loader, device, act_override=None):

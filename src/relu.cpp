@@ -27,6 +27,7 @@ Ciphertext<DCRTPoly> ApproxReLU4_square(CryptoContext<DCRTPoly> cc, const Cipher
     // x^2
 
     auto x2 = cc->EvalMult(ct_x, ct_x);
+    x2 = cc->Rescale(x2);
 
     // EvalAdd 전에 level 로그 찍기
     // std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
@@ -44,8 +45,11 @@ Ciphertext<DCRTPoly> ApproxReLU4_cryptonet(CryptoContext<DCRTPoly> cc, const Cip
     auto pt_coeff2  = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.125));
 
     auto x1 = cc->EvalMult(ct_x, pt_coeff1);
+    x1 = cc->Rescale(x1);
     auto x2_raw = cc->EvalMult(ct_x, ct_x);
+    x2_raw = cc->Rescale(x2_raw);
     auto x2 = cc->EvalMult(x2_raw, pt_coeff2);
+    x2 = cc->Rescale(x2);
 
     auto sum = cc->EvalAdd(x1, x2);
 
@@ -67,10 +71,15 @@ Ciphertext<DCRTPoly> ApproxReLU4_quad(CryptoContext<DCRTPoly> cc, const Cipherte
     auto pt_const   = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.234606));
 
     auto x1 = cc->EvalMult(ct_x, pt_half);
+    x1 = cc->Rescale(x1);
     auto x2_raw = cc->EvalMult(ct_x, ct_x);
+    x2_raw = cc->Rescale(x2_raw);
     auto x2 = cc->EvalMult(x2_raw, pt_coeff2);
+    x2 = cc->Rescale(x2);
     auto x4_raw = cc->EvalMult(x2_raw, x2_raw);
+    x4_raw = cc->Rescale(x4_raw);
     auto x4 = cc->EvalMult(x4_raw, pt_coeff4);
+    x4 = cc->Rescale(x4);
 
     auto sum = cc->EvalAdd(x1, x2);
     sum = cc->EvalAdd(sum, x4);

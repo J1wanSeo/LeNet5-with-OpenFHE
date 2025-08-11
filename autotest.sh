@@ -3,6 +3,8 @@ rm -rf *
 cmake ..
 make clean
 make -j
-#./test
-./conv_bn_exec
-#./fc_test
+if [ -n "$1" ]; then
+    ./conv_bn_exec "$1"
+else
+    ./conv_bn_exec
+fi

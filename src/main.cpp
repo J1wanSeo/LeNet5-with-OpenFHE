@@ -10,8 +10,12 @@
 using namespace std;
 
 
-int main() {
-    int relu_mode;
+int main(int argc, char* argv[]) {
+    int relu_mode = 0;
+
+    if (argc > 1) {
+        relu_mode = std::stoi(argv[1]);
+    } else {
 
     std::cout << " =============================================\n";
     std::cout << "|           Select ReLU Mode                  |\n";
@@ -24,15 +28,17 @@ int main() {
     std::cout << " 4 : student polynomial (custom)\n";
     std::cout << "---------------------------------------------\n";
     std::cout << "Enter your choice (0 - 4): ";
-
     std::cin >> relu_mode;
+    }
+
+    
     int total_depth = CalculateMultiplicativeDepth(relu_mode);
     std::cout << "You selected mode: " << relu_mode << std::endl;
     
 
     CCParams<CryptoContextCKKSRNS> params;
     // params.SetRingDim(1 << 15);
-    // params.SetScalingModSize(40);
+    params.SetScalingModSize(50);
     params.SetBatchSize(1 << 10);
     params.SetMultiplicativeDepth(total_depth);
     params.SetScalingTechnique(FLEXIBLEAUTO);
@@ -211,7 +217,10 @@ int main() {
     t0 = TimeNow();
     auto ct_fc3 = GeneralFC_wo_BN_CKKS(cc, ct_relu4[0], path, 84, 10, 3, keys.publicKey); // bn 없음 반영하기
     cout << "[Layer 5] FC elapsed: " << TimeNow() - t0 << " sec" << endl;
-    SaveDecryptedFCOutput(cc, keys.secretKey, ct_fc3, 10, "fc3_output");
+    auto s = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.01));
+    auto ct_small = cc->EvalMult(ct_fc3, s);
+    ct_small = cc->Rescale(ct_small);
+    SaveDecryptedFCOutput(cc, keys.secretKey, ct_small, 10, "fc3_output");
 
     cout << "[LeNet-5 with OpenFHE] Forward Pass Completed and Output Saved." << endl;
     return 0;   
