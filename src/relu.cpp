@@ -9,21 +9,10 @@
 
 
 Ciphertext<DCRTPoly> ApproxReLU4_linear(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
-    // size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
-
-    // x^2
-
-    
-
-    // EvalAdd 전에 level 로그 찍기
-    // std::cout << "[DEBUG] sum Level: " << sum->GetLevel() << ", pt_const Level: " << pt_const->GetLevel() << std::endl;
-
     return ct_x;
 }
 
 Ciphertext<DCRTPoly> ApproxReLU4_square(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
-    // size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
-
     // x^2
 
     auto x2 = cc->EvalMult(ct_x, ct_x);

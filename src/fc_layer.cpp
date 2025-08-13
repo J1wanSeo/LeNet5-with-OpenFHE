@@ -40,21 +40,22 @@ Ciphertext<DCRTPoly> GeneralFC_CKKS(
         std::vector<double> w_i(weights.begin() + i * in_dim, weights.begin() + (i + 1) * in_dim);
 
         auto pt_w = cc->MakeCKKSPackedPlaintext(w_i);
-        auto ct_mult = cc->EvalMult(ct_input, pt_w);
-        // ct_mult = cc->Rescale(ct_mult);
+        // auto ct_mult = cc->EvalMult(ct_input, pt_w);
 
-        // summation (내적, 계수 shift 방식)
-        for (size_t k = 1; k < in_dim; k <<= 1) {
-            auto rotated = cc->EvalRotate(ct_mult, k);
-            ct_mult = cc->EvalAdd(ct_mult, rotated);
-        }
+        // // summation (내적, 계수 shift 방식)
+        // for (size_t k = 1; k < in_dim; k <<= 1) {
+        //     auto rotated = cc->EvalRotate(ct_mult, k);
+        //     ct_mult = cc->EvalAdd(ct_mult, rotated);
+        // }
+
+        auto ct_mult = cc->EvalInnerProduct(ct_input, pt_w, in_dim);
 
         // bias 추가
         std::vector<double> bias_vec(cc->GetEncodingParams()->GetBatchSize(), bias[i]);
         auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vec);
         auto ct_neuron = cc->EvalAdd(ct_mult, pt_bias);
 
-        auto ct_fc_bn = GeneralBatchNorm_CKKS(cc, ct_neuron, gammas[i], betas[i], means[i], vars[i], cc->GetEncodingParams()->GetBatchSize());
+        auto ct_fc_bn = GeneralBatchNorm_CKKS(cc, ct_mult, gammas[i], betas[i], means[i], vars[i], cc->GetEncodingParams()->GetBatchSize());
 
         // i번째 위치로 shift
         auto ct_shifted = RotateByIndex(cc, ct_fc_bn, -(int)i, cc->GetEncodingParams()->GetBatchSize()); //->EvalRotate(ct_fc_bn, -(int)i);
@@ -64,7 +65,7 @@ Ciphertext<DCRTPoly> GeneralFC_CKKS(
         mask[i] = 1.0;
         auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
         ct_shifted = cc->EvalMult(ct_shifted, pt_mask);
-        // ct_shifted = cc->Rescale(ct_shifted);
+        ct_shifted = cc->Rescale(ct_shifted);
 
         partial_outputs[i] = ct_shifted;
         
@@ -94,17 +95,9 @@ Ciphertext<DCRTPoly> GeneralFC_wo_BN_CKKS(
     std::string layerPrefix = "fc" + std::to_string(layerIndex);
     auto filterPath = pathPrefix + "/" + layerPrefix + "_weight.txt";
     auto biasPath   = pathPrefix + "/" + layerPrefix + "_bias.txt";
-    // auto gammaPath  = pathPrefix + "/" + layerPrefix + "_bn_gamma.txt";
-    // auto betaPath   = pathPrefix + "/" + layerPrefix + "_bn_beta.txt";
-    // auto meanPath   = pathPrefix + "/" + layerPrefix + "_bn_mean.txt";
-    // auto varPath    = pathPrefix + "/" + layerPrefix + "_bn_var.txt";
 
     auto weights = LoadFromTxt(filterPath);
     auto bias  = LoadFromTxt(biasPath);
-    // auto gammas  = LoadFromTxt(gammaPath);
-    // auto betas   = LoadFromTxt(betaPath);
-    // auto means   = LoadFromTxt(meanPath);
-    // auto vars    = LoadFromTxt(varPath);
 
     std::vector<Ciphertext<DCRTPoly>> partial_outputs(out_dim);
 
@@ -113,31 +106,30 @@ Ciphertext<DCRTPoly> GeneralFC_wo_BN_CKKS(
         std::vector<double> w_i(weights.begin() + i * in_dim, weights.begin() + (i + 1) * in_dim);
 
         auto pt_w = cc->MakeCKKSPackedPlaintext(w_i);
-        auto ct_mult = cc->EvalMult(ct_input, pt_w);
-        // ct_mult = cc->Rescale(ct_mult);
+        // auto ct_mult = cc->EvalMult(ct_input, pt_w);
 
-        // summation (내적, 계수 shift 방식)
-        for (size_t k = 1; k < in_dim; k <<= 1) {
-            auto rotated = cc->EvalRotate(ct_mult, k);
-            ct_mult = cc->EvalAdd(ct_mult, rotated);
-        }
+        // // summation (내적, 계수 shift 방식)
+        // for (size_t k = 1; k < in_dim; k <<= 1) {
+        //     auto rotated = cc->EvalRotate(ct_mult, k);
+        //     ct_mult = cc->EvalAdd(ct_mult, rotated);
+        // }
 
-        // bias 추가
+        auto ct_mult = cc->EvalInnerProduct(ct_input, pt_w, in_dim);
+
+        // // bias 추가
         std::vector<double> bias_vec(cc->GetEncodingParams()->GetBatchSize(), bias[i]);
         auto pt_bias = cc->MakeCKKSPackedPlaintext(bias_vec);
         auto ct_neuron = cc->EvalAdd(ct_mult, pt_bias);
 
-        // auto ct_fc_bn = GeneralBatchNorm_CKKS(cc, ct_neuron, gammas[i], betas[i], means[i], vars[i], cc->GetEncodingParams()->GetBatchSize());
-
         // i번째 위치로 shift
-        auto ct_shifted = RotateByIndex(cc, ct_neuron, -(int)i, cc->GetEncodingParams()->GetBatchSize()); //cc->EvalRotate(ct_neuron, -(int)i);
+        auto ct_shifted = RotateByIndex(cc, ct_mult, -(int)i, cc->GetEncodingParams()->GetBatchSize()); //cc->EvalRotate(ct_neuron, -(int)i);
         // ct_shifted = cc->Rescale(ct_shifted);   
 
         std::vector<double> mask(cc->GetEncodingParams()->GetBatchSize(), 0.0);
         mask[i] = 1.0;
         auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
         ct_shifted = cc->EvalMult(ct_shifted, pt_mask);
-        // ct_shifted = cc->Rescale(ct_shifted);
+        ct_shifted = cc->Rescale(ct_shifted);
 
         partial_outputs[i] = ct_shifted;
     }

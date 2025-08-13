@@ -24,9 +24,6 @@ std::vector<double> LoadFromTxt(const std::string& filename) {
     return data;
 }
 
-// inline double TimeNow() {
-//     return std::chrono::duration<double>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-// }
 
 std::vector<int> GenerateRotationIndices(size_t filterH, size_t filterW, size_t inputW, size_t interleave) {
     std::set<int> rotSet;
@@ -40,9 +37,6 @@ std::vector<int> GenerateRotationIndices(size_t filterH, size_t filterW, size_t 
     return std::vector<int>(rotSet.begin(), rotSet.end());
 }
 
-// 1) 유효 슬롯 원위치 인덱스 (행, 열 고려)
-
-// 2) flatten 내부 압축에 필요한 rotation key (-validIndices[i], i>=1)
 std::vector<int> GetFlattenRotationIndices(const std::vector<int>& validIndices) {
     std::vector<int> rotKeys;
     for (size_t i = 1; i < validIndices.size(); i++) {
@@ -51,7 +45,6 @@ std::vector<int> GetFlattenRotationIndices(const std::vector<int>& validIndices)
     return rotKeys;
 }
 
-// 3) 여러 ciphertext 합칠 때 필요한 rotation key (perCtValidCount * i)
 std::vector<int> GetConcatRotationIndices(size_t numCts, size_t perCtValidCount) {
     std::vector<int> rotKeys;
     for (size_t i = 1; i < numCts; ++i) {
@@ -59,64 +52,6 @@ std::vector<int> GetConcatRotationIndices(size_t numCts, size_t perCtValidCount)
     }
     return rotKeys;
 }
-
-
-// Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
-//     CryptoContext<DCRTPoly> cc,
-//     const Ciphertext<DCRTPoly>& ct_input,
-//     const std::vector<double>& filter,
-//     double bias,
-//     size_t inputH, size_t inputW,
-//     size_t filterH, size_t filterW,
-//     size_t stride,
-//     size_t interleave,
-//     const PublicKey<DCRTPoly>& pk) {
-
-//     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
-//     size_t outH = (inputH - filterH) / (stride *interleave) + 1;
-//     size_t outW = (inputW - filterW) / (stride *interleave) + 1;
-
-//     size_t total = filterH * filterW;
-//     std::vector<Ciphertext<DCRTPoly>> partials(total);
-//     // std::vector<Ciphertext<DCRTPoly>> partials;
-
-//     // std::vector<double> bias_vector(slotCount, 0.0);
-//     std::vector<double> mask(slotCount, 0.0);
-    
-//     for (size_t i = 0; i < outH; i++) {
-//         for (size_t j = 0; j < outW; j++) {
-//             size_t output_slot = i * (stride * inputW * interleave) + j * (stride * interleave);
-//             if (output_slot < slotCount) {
-//                 mask[output_slot] = 1.0;
-//                 // bias_vector[output_slot] = bias;
-//             }                    
-//         }
-//     }
-
-//     auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
-
-//     #pragma omp parallel for
-//     for (size_t i = 0; i < total; i++) {
-//         size_t dy = i / filterW;
-//         size_t dx = i % filterW;
-
-//         int rotAmount = dy * inputW * interleave + dx * interleave;
-//         auto rotated = cc->EvalRotate(ct_input, rotAmount);
-
-//         auto masked_rotated = cc->EvalMult(rotated, pt_mask);
-
-//         auto ct_weighted = cc->EvalMult(masked_rotated, filter[i]);
-
-//         partials[i] = ct_weighted;
-//     }
-
-//     Ciphertext<DCRTPoly> result = cc->EvalAddMany(partials);
-    
-//     result = cc->EvalMult(result, pt_mask);
-
-//     return result;
-// }
-
 
 Ciphertext<DCRTPoly> GeneralBatchNorm_CKKS(
     CryptoContext<DCRTPoly> cc,
@@ -388,14 +323,14 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
         for (size_t j = 0; j < outW; j++) {
             size_t output_slot = (i * stride * interleave) * inputW + (j * stride * interleave);
             if (output_slot < slotCount) {
-                mask[output_slot] = 1.0; // mask[output_slot] = 0.25;
+                mask[output_slot] = 0.25; // mask[output_slot] = 0.25;
             }
         }
     }
     auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
 
     // 2x2 평균 filter weight = 1/4
-    double weight = 0.25;
+    // double weight = 0.25;
 
     // 채널별 AvgPool 수행
     std::vector<Ciphertext<DCRTPoly>> pooled(ct_channels.size());
@@ -410,10 +345,10 @@ std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS(
                 int rotAmount = dy * inputW * interleave + dx * interleave;
                 auto rotated = cc->EvalRotate(ct_input, rotAmount);
 
-                auto masked_rotated = cc->EvalMult(rotated, pt_mask);
+                // auto masked_rotated = cc->EvalMult(rotated, pt_mask);
                 // masked_rotated = cc->Rescale(masked_rotated);
 
-                auto ct_weighted = cc->EvalMult(masked_rotated, weight);
+                auto ct_weighted = cc->EvalMult(rotated, pt_mask);
                 // ct_weighted = cc->Rescale(ct_weighted);
 
                 partials.push_back(ct_weighted);
@@ -464,7 +399,7 @@ int CalculateMultiplicativeDepth(int relu_mode) {
     int relu_depth = 4; 
     
     switch (relu_mode) {
-        case 0: relu_depth = 1; break;  // linear x, 사실 곱셈 없음
+        case 0: relu_depth = 0; break;  // linear x, 사실 곱셈 없음
         case 1: relu_depth = 2; break;  // x^2
         case 2: relu_depth = 2; break;  // CryptoNet
         case 3: relu_depth = 4; break;  // quad
@@ -473,93 +408,14 @@ int CalculateMultiplicativeDepth(int relu_mode) {
     }
 
     int depth = 0;
-    depth += 3 * 2;   // conv + bn
-    // depth += 2 * 1;   // realign
-    depth += 2 * 1;   // avgpool
-    depth += 4 * relu_depth;  // relu (relu_mode에 따라 다름)
-    depth += 2 * 2;   // fc + bn
-    depth += 1 * 2;   // fc
-    depth += 1 * 2;   // flatten
-    depth += 1;
+
+    // # of mult depth/layer * # of layers 
+    depth += 2 * 2;   // conv + bn
+    depth += 1 * 2;   // avgpool
+    depth += relu_depth * 4;  // relu (relu_mode에 따라 다름)
+    depth += 3 * 2;   // fc + bn
+    depth += 2 * 1;   // fc
+    depth += 1 * 1;   // flatten
+    // depth += 1;
     return depth;
 }
-
-// 컨볼루션 결과를 연속적으로 리패킹하는 함수
-// inputH, inputW: 원본 입력 크기
-// outputH, outputW: 컨볼루션 출력 크기
-// Ciphertext<DCRTPoly> ReAlignConvolutionResult(
-//     CryptoContext<DCRTPoly> cc,
-//     const Ciphertext<DCRTPoly>& ct_input,
-//     int inputH, int inputW, // 32, 32
-//     int outputH, int outputW, // 28, 28
-//     int interleave
-// ) {
-//     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
-//     std::vector<Ciphertext<DCRTPoly>> ReAlign_ciphers;
-
-//     // 각 행별로 처리
-//     for (int i = 0; i < outputH / interleave; ++i) {
-//         // i번째 행의 시작 인덱스와 목표 인덱스
-//         int sourceStart = i * inputW * interleave;           // 0, 32, 64
-//         int targetStart = i * outputW;          // 0, 28, 56
-        
-//         // 해당 행의 outputW개 원소를 마스킹
-//         std::vector<double> mask(slotCount, 0.0);
-//         for (int j = 0; j < outputW; ++j) {
-//             mask[sourceStart + j] = 1.0;  // 연속된 outputW개 원소 선택
-//         }
-//         auto pt_mask = cc->MakeCKKSPackedPlaintext(mask);
-        
-//         // 마스킹 적용
-//         auto ct_masked = cc->EvalMult(ct_input, pt_mask);
-        
-//         // 목표 위치로 rotation
-//         int rot_amount = -targetStart + sourceStart;  // 0, -2, -4, ...
-//         auto ct_rot = (rot_amount == 0) ? ct_masked : RotateByIndex(cc, ct_masked, rot_amount, cc->GetEncodingParams()->GetBatchSize()); //cc->EvalRotate(ct_masked, rot_amount);
-        
-//         ReAlign_ciphers.push_back(ct_rot);
-//     }
-    
-//     return cc->EvalAddMany(ReAlign_ciphers);
-// }
-
-// // 사용 예시:
-// // 5x5 입력에서 3x3 컨볼루션 결과를 리패킹
-// // auto repacked = RepackConvolutionResult(cc, conv_result, 5, 5, 3, 3);
-
-// std::vector<Ciphertext<DCRTPoly>> ReAlignConvolutionResult_MultiChannel(
-//     CryptoContext<DCRTPoly> cc,
-//     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
-//     int inputH, int inputW,
-//     int outputH, int outputW,
-//     int interleave
-// ) {
-//     // std::vector<Ciphertext<DCRTPoly>> ReAligned;
-//     std::vector<Ciphertext<DCRTPoly>> ReAligned(ct_channels.size());
-//     #pragma omp parallel for
-//     for (size_t i = 0; i < ct_channels.size(); ++i) {
-//         ReAligned[i] = ReAlignConvolutionResult(cc, ct_channels[i], inputH, inputW, outputH, outputW, interleave);
-//     }
-//     return ReAligned;
-// }
-
-
-// std::vector<int> GenerateReAlignRotationKeys(
-//     int inputH, int inputW,
-//     int outputH, int outputW,
-//     int interleave
-// ) {
-//     std::vector<int> rotationKeys;
-    
-//     for (int i = 0; i < outputH / interleave; ++i) {
-//         int sourceStart = i * inputW * interleave;           // 0, 5, 10, ...
-//         int targetStart = i * outputW;          // 0, 3, 6, ...
-//         int rot_amount = - targetStart + sourceStart;  // 0, -2, -4, ...
-        
-//         if (rot_amount != 0) {
-//             rotationKeys.push_back(rot_amount);
-//         }
-//     }
-    
-//     return rotationKeys;
-// }

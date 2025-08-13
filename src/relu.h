@@ -26,6 +26,12 @@ Ciphertext<DCRTPoly> ApproxReLU4_quad(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct_x);
 
+
+// Studen ReLU
+Ciphertext<DCRTPoly> ApproxReLU4_Student(
+    CryptoContext<DCRTPoly> cc,
+     const Ciphertext<DCRTPoly>& ct_x);
+
 std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
     CryptoContext<DCRTPoly> cc,
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,

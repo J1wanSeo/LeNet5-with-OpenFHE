@@ -26,23 +26,14 @@ int CalculateMultiplicativeDepth(int relu_mode);
 std::vector<int> GetFlattenRotationIndices(const std::vector<int>& validIndices);
 
 std::vector<int> GetConcatRotationIndices(size_t numCts, size_t perCtValidCount);
-// Conv2D
-// Ciphertext<DCRTPoly> GeneralConv2D_CKKS(
-//     CryptoContext<DCRTPoly> cc,
-//     const Ciphertext<DCRTPoly>& ct_input,
-//     const std::vector<double>& filter,
-//     double bias,
-//     size_t inputH, size_t inputW,
-//     size_t filterH, size_t filterW,
-//     size_t stride,
-//     size_t interleave,
-//     const PublicKey<DCRTPoly>& pk);
+
 Ciphertext<DCRTPoly> RotateByIndex(
     CryptoContext<DCRTPoly> cc,
     const Ciphertext<DCRTPoly>& ct,
     int rot,              // 음수 혹은 양수 회전 인덱스
     int slotCount
 );
+
 // BatchNorm
 Ciphertext<DCRTPoly> GeneralBatchNorm_CKKS(
     CryptoContext<DCRTPoly> cc,
@@ -94,28 +85,6 @@ void SaveDecryptedConvOutput(
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
     size_t outH, size_t outW,
     const std::string& prefix);
-
-std::vector<int> GenerateReAlignRotationKeys(
-    int inputH, int inputW,
-    int outputH, int outputW,
-    int interleave
-);
-
-std::vector<Ciphertext<DCRTPoly>> ReAlignConvolutionResult_MultiChannel(
-    CryptoContext<DCRTPoly> cc,
-    const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
-    int inputH, int inputW,
-    int outputH, int outputW,
-    int interleave
-);
-
-Ciphertext<DCRTPoly> ReAlignConvolutionResult(
-    CryptoContext<DCRTPoly> cc,
-    const Ciphertext<DCRTPoly>& ct_input,
-    int inputH, int inputW,
-    int outputH, int outputW,
-    int interleave
-);
 
 std::vector<Ciphertext<DCRTPoly>> AvgPool2x2_MultiChannel_CKKS_SequentialPack(
     CryptoContext<DCRTPoly> cc,

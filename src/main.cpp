@@ -67,10 +67,6 @@ int main(int argc, char* argv[]) {
     size_t ringDim = cc->GetRingDimension();  // 2^logN
     size_t logN = static_cast<size_t>(std::log2(ringDim));
 
-    // logQ (log2 scale)
-    // double scale = cc->GetCryptoParameters()->GetScalingModSize();    // scale = 2^logQ
-    // double logQ = std::log2(scale);
-
     // SlotSize
     size_t slotCount = cc->GetEncodingParams()->GetBatchSize();
 
@@ -215,12 +211,12 @@ int main(int argc, char* argv[]) {
     // =======================
     // 2
     t0 = TimeNow();
-    auto ct_fc3 = GeneralFC_wo_BN_CKKS(cc, ct_relu4[0], path, 84, 10, 3, keys.publicKey); // bn 없음 반영하기
+    auto ct_fc3 = GeneralFC_wo_BN_CKKS(cc, ct_relu4[0], path, 84, 10, 3, keys.publicKey); 
     cout << "[Layer 5] FC elapsed: " << TimeNow() - t0 << " sec" << endl;
-    auto s = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.01));
-    auto ct_small = cc->EvalMult(ct_fc3, s);
-    ct_small = cc->Rescale(ct_small);
-    SaveDecryptedFCOutput(cc, keys.secretKey, ct_small, 10, "fc3_output");
+    // auto s = cc->MakeCKKSPackedPlaintext(std::vector<double>(slotCount, 0.01));
+    // auto ct_small = cc->EvalMult(ct_fc3, s);
+    // ct_small = cc->Rescale(ct_small);
+    SaveDecryptedFCOutput(cc, keys.secretKey, ct_fc3, 10, "fc3_output");
 
     cout << "[LeNet-5 with OpenFHE] Forward Pass Completed and Output Saved." << endl;
     return 0;   

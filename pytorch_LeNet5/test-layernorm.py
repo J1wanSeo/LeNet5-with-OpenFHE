@@ -180,9 +180,11 @@ def model_save(epoch):
     np.save(f"lenet_weights_epoch({epoch+1})"+"/fc2_weight.npy", fc2_w)
     np.save(f"lenet_weights_epoch({epoch+1})"+"/fc2_bias.npy", fc2_b)
 
+    scaling_factor = 1e-3  # 또는 1e-6, 실험적으로 선택
+
     # fc3 weight, bias
-    fc3_w = model.fc3.weight.detach().cpu().numpy()
-    fc3_b = model.fc3.bias.detach().cpu().numpy()
+    fc3_w = model.fc3.weight.detach().cpu().numpy() * scaling_factor
+    fc3_b = model.fc3.bias.detach().cpu().numpy() * scaling_factor
     np.save(f"lenet_weights_epoch({epoch+1})"+"/fc3_weight.npy", fc3_w)
     np.save(f"lenet_weights_epoch({epoch+1})"+"/fc3_bias.npy", fc3_b)
 
