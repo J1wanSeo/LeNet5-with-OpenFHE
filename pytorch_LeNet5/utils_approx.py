@@ -90,12 +90,12 @@ def sgn_approx(x, relu_dict):
     B = torch.tensor(relu_dict['B'], dtype = torch.double, device = x.device)
 
     # Get degrees
-    f = open('./degreeResult/deg_' + str(alpha) + '.txt')
+    f = open('./pytorch_LeNet5/degreeResult/deg_' + str(alpha) + '.txt')
     readed = f.readlines()
     comp_deg = [int(i) for i in readed]
 
     # Get coefficients
-    f = open('./coeffResult/coeff_' + str(alpha) + '.txt')
+    f = open('./pytorch_LeNet5/coeffResult/coeff_' + str(alpha) + '.txt')
     coeffs_all_str = f.readlines()
     coeffs_all = [torch.tensor(np.double(i), dtype=torch.double) for i in coeffs_all_str]
     i = 0

@@ -24,13 +24,21 @@ def run_python_baseline():
     inference_only.load_weights_from_npy(model, "./pytorch_LeNet5/parameters_standard")
 
     print("=== Python Baseline: Single Sample Inference ===")
-    inference_only.infer_single_sample(model, valid_dataset, DEVICE, act_override=act_fn)
+    inference_only.infer_single_sample(model, valid_dataset, DEVICE, act_override=act_fn[0])
+
+    print("=== Python Baseline (F.relu): Full Validation Inference ===")
+    acc_relu = inference_only.inference(model, valid_loader, DEVICE, act_override=None)
+    print(f"[RESULT] Accuracy with F.relu: {acc_relu*100:.2f}%")
 
     print("=== Python Baseline: Full Validation Inference ===")
-    acc = inference_only.inference(model, valid_loader, DEVICE, act_override=act_fn)
+    acc_custom = inference_only.inference(model, valid_loader, DEVICE, act_override=act_fn[0])
+    print(f"[RESULT] Accuracy with acc_custom: {acc_custom*100:.2f}%")
 
-    print(f"[RESULT] Python baseline accuracy: {acc*100:.2f}%")
-    return acc
+
+    print("=== Accuracy Comparison ===")
+    print(f"F.relu: {acc_relu*100:.2f}% vs acc_custom: {acc_custom*100:.2f}%")
+
+    return acc_custom
 
 
 def run_cpp_fhe_inference():

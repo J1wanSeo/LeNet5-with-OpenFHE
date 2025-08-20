@@ -378,7 +378,7 @@ void SaveDecryptedConvOutput(
 
         // 파일명 구성
         std::string filename = prefix + "_channel_" + std::to_string(ch) + ".txt";
-        std::ofstream out(filename);
+        std::ofstream out(filename);2
         out << std::fixed << std::setprecision(8);
 
         // 데이터 저장

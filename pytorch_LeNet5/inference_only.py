@@ -224,9 +224,8 @@ quad_relu_polynomials = {
                 "0.234606 + 0.5 * x + 0.204875 * x ** 2 - 0.0063896 * x ** 4"),
     'Original ReLU': (None,
                 "ReLU(x)=max(0,x)"),
-    'student': (lambda x: x, "insert your own description"),
-    'ReLU-maker' : (lambda x: ReLU_maker({'type':'proposed','alpha':13,'B':50})(x), "ReLU Maker with alpha==13")
-
+    'ReLU-maker' : (lambda x: ReLU_maker({'type':'proposed','alpha':13,'B':50})(x), "ReLU Maker with alpha==13"),
+    'student': (lambda x: x, "insert your own description")
     }
 
 # 선택
