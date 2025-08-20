@@ -97,4 +97,4 @@ docker build -t openfhe-lenet5:latest .
 > ./scripts/build-openfhe-development.sh
 5. python code 실행
 > conda activate py_3_10
-> cd LeNet5-with-Openfhe
+> cd .. && cd LeNet5-with-Openfhe
