@@ -1,6 +1,6 @@
 cd build
 rm -rf *
-cmake ..
+cmake .. -DWITH_INTEL_HEXL=ON -DINTEL_HEXL_HINT_DIR=/usr/local/lib
 make clean
 make -j
 if [ -n "$1" ]; then
