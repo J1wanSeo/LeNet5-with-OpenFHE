@@ -71,16 +71,29 @@ Docker 설치
 sudo systemctl enable --now docker
 systemctl status docker
 ```
+
+# Docker 파일 다운로드
+> 파일다운로드 링크: 
+> 다운받은 압축파일을 C:\ 로 이동
+> 압축해제
+# Visual Studio 실행
+## ctrl + ` 을 통해 Termnial 실행
+## C:\로 이동
+```
+cd C:\
+cd lenet5-fhe
+```
 # Docker build 수행
 ```
 docker build -t openfhe-lenet5:latest .
 ```
-
-# docker run --rm -it openfhe-lenet5
-4. Visual Studio 접속
-4-1. github git 폴더로 이동
+# Docker 실행 (반드시 build 이후 수행)
+```
+docker run --rm -it openfhe-lenet5
+```
+# Openfhe 설치
 > cd openfhe-configurator
-4-2. Openfhe-Hexl 설치
+## Openfhe-Hexl 설치
 > ./scripts/configure.sh
 > n
 > y
