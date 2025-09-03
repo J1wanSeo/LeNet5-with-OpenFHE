@@ -69,7 +69,7 @@ cd ~
 # 6) Conda 환경 초기화
 # ============================
 /opt/conda/bin/conda init bash
-source /root/.bashrc
+source ~/.bashrc
 
 # ============================
 # 7) Git 레포지토리 클론
