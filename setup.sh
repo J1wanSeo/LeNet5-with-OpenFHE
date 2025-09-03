@@ -20,7 +20,7 @@ apt-get update && apt-get install -y --no-install-recommends \
 # ============================
 # 2) Miniconda 설치
 # ============================
-curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh
+curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  /tmp/miniconda.sh
 bash /tmp/miniconda.sh -b -p /opt/conda
 rm /tmp/miniconda.sh
 
