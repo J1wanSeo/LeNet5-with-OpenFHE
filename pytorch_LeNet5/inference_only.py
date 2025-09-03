@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 
 from torchvision import datasets, transforms
+import os
 
 from .utils_approx import ReLU_maker
 
@@ -146,11 +147,11 @@ def select_activation():
     print(" 1: square (x^2)")
     print(" 2: CryptoNet (0.25 + 0.5 * x + 0.125 * x^2)")
     print(" 3: quad (0.234606 + 0.5 * x + 0.204875 * x^2 - 0.0063896 * x^4)")
-    print(" 4: ReLU (max(0,x))")
-    print(" 5: ReLU-maker (utils_approx.ReLU_maker)")
-    print(" 6: student (custom polynomial)")
+    print(" 4: ReLU-maker (utils_approx.ReLU_maker)")
+    print(" 5: student (custom polynomial)")
+    # print(" 6: ReLU (max(0,x))")
 
-    choice = input("Enter number (0~6): ")
+    choice = input("Enter number (0~5): ")
 
     try:
         choice_int = int(choice)
@@ -222,10 +223,9 @@ quad_relu_polynomials = {
     #             "0.5 * x + 0.125*x**2"),
     'quad': (lambda x: 0.234606 + 0.5 * x + 0.204875 * x ** 2 - 0.0063896 * x ** 4,
                 "0.234606 + 0.5 * x + 0.204875 * x ** 2 - 0.0063896 * x ** 4"),
-    'Original ReLU': (None,
-                "ReLU(x)=max(0,x)"),
-    'ReLU-maker' : (lambda x: ReLU_maker({'type':'proposed','alpha':13,'B':50})(x), "ReLU Maker with alpha==13"),
-    'student': (lambda x: x, "insert your own description")
+    'ReLU-maker' : (lambda x: ReLU_maker({'type':'proposed','alpha':13,'B':10})(x), "ReLU Maker with alpha==13"),
+    'student': (lambda x: x, "insert your own description"),
+    'Original ReLU': (None, "ReLU(x)=max(0,x)")
     }
 
 # 선택
@@ -271,33 +271,54 @@ class LeNet5(nn.Module):
             act = quad_relu_polynomials[2]['CryptoNet']
             
 
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = act(x)
-        x = F.avg_pool2d(x, (2, 2))
+         # --- Conv1 ---
+        conv1_out = self.conv1(x)
+        bn1_out = self.bn1(conv1_out)
+        relu1_out = act(bn1_out)
+        pool1_out = F.avg_pool2d(relu1_out, (2, 2))
 
-        # Conv2 + LayerNorm + Activation + Pool
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = act(x)
-        x = F.avg_pool2d(x, 2)
-        
+        # --- Conv2 ---
+        conv2_out = self.conv2(pool1_out)
+        bn2_out = self.bn2(conv2_out)
+        relu2_out = act(bn2_out)
+        pool2_out = F.avg_pool2d(relu2_out, 2)
+
         # Flatten
-        x = x.view(-1, 400)
+        x = pool2_out.view(-1, 400)
 
-        # FC1 + LayerNorm + Activation
-        x = self.fc1(x)
-        x = self.bn3(x)
-        x = act(x)
+        # --- FC1 ---
+        fc1_out = self.fc1(x)
+        bn3_out = self.bn3(fc1_out)
+        relu3_out = act(bn3_out)
 
-        # FC3 (logits)
-        x = self.fc2(x)
-        x = self.bn4(x)
-        x = act(x)
+        # --- FC2 ---
+        fc2_out = self.fc2(relu3_out)
+        bn4_out = self.bn4(fc2_out)
+        relu4_out = act(bn4_out)
 
-        x = self.fc3(x)
+        # --- FC3 (logits) ---
+        fc3_out = self.fc3(relu4_out)
 
-        return x
+        # --- 저장 ---
+        
+
+        save_channel_outputs(bn1_out, "py_conv1_output")
+        save_channel_outputs(relu1_out, "py_relu1_output")
+        save_channel_outputs(pool1_out, "py_pool1_output")
+
+        save_channel_outputs(bn2_out, "py_conv2_output")
+        save_channel_outputs(relu2_out, "py_relu2_output")
+        save_channel_outputs(pool2_out, "py_pool2_output")
+
+        save_channel_outputs(bn3_out, "py_fc1_output")
+        save_channel_outputs(relu3_out, "py_fc1_relu_output")
+
+        save_channel_outputs(bn4_out, "py_fc2_output")
+        save_channel_outputs(relu4_out, "py_fc2_relu_output")
+
+        save_channel_outputs(fc3_out, "py_fc3_output")
+
+        return fc3_out
 
     def num_flat_features(self, x):
         size = x.size()[1:]  # all dimensions except the batch dimension
@@ -306,7 +327,25 @@ class LeNet5(nn.Module):
             num_features *= s
         return num_features
 
-
+def save_channel_outputs(tensor, prefix):
+    out_path = "./results/"
+    os.makedirs(out_path, exist_ok=True)
+    if tensor.dim() == 4:
+        # 4D tensor (N,C,H,W) -> 각 채널별 1D 배열로 저장
+        for ch in range(tensor.size(1)):
+            np.savetxt(
+                os.path.join(out_path, f"{prefix}_channel{ch}.txt"),
+                tensor[0, ch].flatten().cpu().numpy(),
+                delimiter=","
+            )
+    elif tensor.dim() == 2:
+        # 2D tensor (N, Features) -> 1D 벡터별 저장
+        for ch in range(tensor.size(1)):
+            np.savetxt(
+                os.path.join(out_path, f"{prefix}_feature{ch}.txt"),
+                tensor[0, ch].cpu().numpy().reshape(1),
+                delimiter=","
+            )
 
 if __name__ == "__main__":
     DEVICE = torch.device("cpu")
@@ -329,4 +368,3 @@ if __name__ == "__main__":
     # exit()
     # 추론 실행
     inference(model, valid_loader, DEVICE, act_override=act_fn)
-

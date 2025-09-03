@@ -404,6 +404,7 @@ int CalculateMultiplicativeDepth(int relu_mode) {
         case 2: relu_depth = 2; break;  // CryptoNet
         case 3: relu_depth = 4; break;  // quad
         case 4: relu_depth = 4; break;  // student polynomial
+        case 5: relu_depth = 4; break;  // Approx Relu
         default: relu_depth = 4; break;
     }
 

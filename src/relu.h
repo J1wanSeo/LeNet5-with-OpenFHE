@@ -37,3 +37,14 @@ std::vector<Ciphertext<DCRTPoly>> ApplyApproxReLU4_All(
     const std::vector<Ciphertext<DCRTPoly>>& ct_channels,
     int mode = 2);
 
+Ciphertext<DCRTPoly> ApproxReLU_Advanced(CryptoContext<DCRTPoly> cc, 
+    const Ciphertext<DCRTPoly>& ct_x,
+    double B);
+
+Ciphertext<DCRTPoly> ApproxSign(CryptoContext<DCRTPoly> cc, 
+    const Ciphertext<DCRTPoly>& ct_x, 
+    double B);
+
+Ciphertext<DCRTPoly> EvalPolynomial(CryptoContext<DCRTPoly> cc, 
+    const Ciphertext<DCRTPoly>& ct_x,
+    const std::vector<double>& coefficients);

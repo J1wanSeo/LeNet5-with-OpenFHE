@@ -25,9 +25,10 @@ int main(int argc, char* argv[]) {
     std::cout << " 1 : x^2 (Square function)\n";
     std::cout << " 2 : CryptoNet (0.25 + 0.5x + 0.125x^2)\n";
     std::cout << " 3 : quad (4th degree polynomial approx.)\n";
-    std::cout << " 4 : student polynomial (custom)\n";
+    std::cout << " 4 : ReLU-maker (alpah=13, B = 50)\n";
+    std::cout << " 5 : student polynomial (custom)\n";
     std::cout << "---------------------------------------------\n";
-    std::cout << "Enter your choice (0 - 4): ";
+    std::cout << "Enter your choice (0 - 5): ";
     std::cin >> relu_mode;
     }
 
@@ -130,12 +131,12 @@ int main(int argc, char* argv[]) {
                                 1, 6, 1, 1,
                                 keys.publicKey, keys.secretKey);
     cout << "[Layer 1] Conv+BN elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv1, 32, 32, "conv1_output");
+    SaveDecryptedConvOutput(cc, keys.secretKey, ct_conv1, 32, 32, "conv1_output");
 
     t0 = TimeNow(); // 1
     auto ct_relu1 = ApplyApproxReLU4_All(cc, ct_conv1, relu_mode);
     cout << "[Layer 1] ReLU elapsed: " << TimeNow() - t0 << " sec" << endl;
-    // SaveDecryptedConvOutput(cc, keys.secretKey, ct_relu1, 32, 32, "relu1_output");
+    SaveDecryptedConvOutput(cc, keys.secretKey, ct_relu1, 32, 32, "relu1_output");
 
     // t0 = TimeNow();  // 1
     // auto ct_repack1 = ReAlignConvolutionResult_MultiChannel(cc, ct_relu1, 32, 32, 28, 28, 1);

@@ -98,6 +98,22 @@ docker run --rm -it openfhe-lenet5
 > n
 > y
 > ./scripts/build-openfhe-development.sh
-5. python code 실행
+
+# python code 실행
 > conda activate py_3_10
 > cd .. && cd LeNet5-with-Openfhe
+> python main.py
+
+
+# ReLU 변경 및 적용 방법
+1. cd ~/LeNet5-with-OpenFHE/src
+2. vim relu.cpp
+3. relu.cpp 파일 내  ApproxReLU4_Student 하단 영역 수정
+```
+    // Insert your own approximation below
+
+    auto result = ct_x; // modify this when implementing your own code
+
+    // Insert your own approximation above
+```
+4. 적용 확인 시 6 선택

@@ -193,6 +193,12 @@ HEXL_DIR:PATH=/home/ubuntu/openfhe-configurator/openfhe-staging/install/lib/cmak
 //The directory containing a CMake configuration file for OpenFHE.
 OpenFHE_DIR:PATH=/home/ubuntu/openfhe-configurator/openfhe-staging/install/lib/OpenFHE
 
+//No help, variable specified on the command line.
+OpenFHE_INTEL_HEXL_HINT_DIR:UNINITIALIZED=/usr/local/lib
+
+//No help, variable specified on the command line.
+OpenFHE_WITH_INTEL_HEXL:UNINITIALIZED=ON
+
 //Value Computed by CMake
 demo_BINARY_DIR:STATIC=/home/ubuntu/LeNet5-with-OpenFHE/build
 
