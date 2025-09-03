@@ -20,7 +20,7 @@ apt-get update && apt-get install -y --no-install-recommends \
 # ============================
 # 2) Miniconda 설치
 # ============================
-curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  /tmp/miniconda.sh
+curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  -o /tmp/miniconda.sh
 bash /tmp/miniconda.sh -b -p /opt/conda
 rm /tmp/miniconda.sh
 
@@ -28,7 +28,7 @@ rm /tmp/miniconda.sh
 # 3) Conda 환경 생성
 # ============================
 cp environment.yml /tmp/environment.yml
-cp setup.sh /workspace/setup.sh
+# cp setup.sh /workspace/setup.sh
 
 /opt/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 /opt/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
