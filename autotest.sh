@@ -1,6 +1,7 @@
 cd build
 rm -rf *
-cmake .. -DOpenFHE_WITH_INTEL_HEXL=ON -DOpenFHE_INTEL_HEXL_HINT_DIR=/usr/local/lib
+# cmake .. -DOpenFHE_WITH_INTEL_HEXL=ON -DOpenFHE_INTEL_HEXL_HINT_DIR=/usr/local/lib
+cmake ..
 make clean
 make -j
 if [ -n "$1" ]; then
