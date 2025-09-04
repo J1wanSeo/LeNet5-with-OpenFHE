@@ -40,7 +40,7 @@ cp environment.yml /tmp/environment.yml
 # mkdir -p /opt/intel-hexl/build
 # cd /opt/intel-hexl/build
 # cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
-# ninja
+# ninja -j2
 # ninja install
 # ldconfig
 # cd ~
@@ -58,7 +58,7 @@ cmake -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     ..
-ninja
+ninja -j2
 ninja install
 ldconfig
 cd ~
