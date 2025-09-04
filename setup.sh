@@ -6,6 +6,9 @@ export DEBIAN_FRONTEND=noninteractive
 export PATH=/opt/conda/bin:$PATH
 export CC=clang
 export CXX=clang++
+sudo sed -i 's|kr.archive.ubuntu.com|mirror.kakao.com|g' /etc/apt/sources.list
+sudo sed -i 's|security.ubuntu.com|mirror.kakao.com|g' /etc/apt/sources.list
+
 
 # ============================
 # 1) 필수 패키지 설치
