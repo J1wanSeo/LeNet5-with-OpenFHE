@@ -78,14 +78,5 @@ cd openfhe-configurator
 (echo n; echo y) | ./scripts/configure.sh
 ./scripts/build-openfhe-development.sh
 
-conda activate py_3_10
-cd ..
-cd LeNet5-with-Openfhe
-
-
-# ============================
-# 8) 완료 메시지
-# ============================
-echo "✅ 환경 구축이 완료되었습니다!"
-
-
+gnome-terminal -- bash -c "echo 새 터미널에서 실행됨; exec bash"
+exit
