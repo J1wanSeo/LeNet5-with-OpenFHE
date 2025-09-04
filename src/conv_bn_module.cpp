@@ -288,7 +288,7 @@ Ciphertext<DCRTPoly> FlattenCiphertexts(
 
     std::vector<Ciphertext<DCRTPoly>> compressed_cts(ct_vec.size());
     #pragma omp parallel for
-    for (size_t i = 0; i < (int)ct_vec.size(); i++) {
+    for (int i = 0; i < (int)ct_vec.size(); i++) {
         // std::cout << "[DEBUG] FlattenCiphertexts: compressing ciphertext " << i << std::endl;
         compressed_cts[i] = CompressValidSlots(cc, ct_vec[i], validIndices);
         // if(i == 1){
