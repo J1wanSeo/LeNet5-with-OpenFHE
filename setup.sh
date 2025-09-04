@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
-
 # ============================
 # 0) 기본 설정
 # ============================
@@ -77,9 +75,7 @@ source ~/.bashrc
 cd ~
 git clone https://github.com/openfheorg/openfhe-configurator.git
 cd openfhe-configurator
-./scripts/configure.sh
-n
-y
+(echo n; echo y) | ./scripts/configure.sh
 ./scripts/build-openfhe-development.sh
 
 conda activate py_3_10
@@ -91,4 +87,5 @@ cd LeNet5-with-Openfhe
 # 8) 완료 메시지
 # ============================
 echo "✅ 환경 구축이 완료되었습니다!"
+
 
