@@ -55,9 +55,9 @@ cmake -G Ninja \
     -DWITH_OPENMP=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
-    # -DWITH_INTEL_HEXL=ON \
-    # -DINTEL_HEXL_PREBUILT=OFF \
     ..
+# -DWITH_INTEL_HEXL=ON \
+# -DINTEL_HEXL_PREBUILT=OFF \
 ninja -j2
 ninja install
 ldconfig
