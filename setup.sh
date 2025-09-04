@@ -53,10 +53,10 @@ mkdir -p /opt/openfhe/build
 cd /opt/openfhe/build
 cmake -G Ninja \
     -DWITH_OPENMP=ON \
-    # -DWITH_INTEL_HEXL=ON \
-    # -DINTEL_HEXL_PREBUILT=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
+    # -DWITH_INTEL_HEXL=ON \
+    # -DINTEL_HEXL_PREBUILT=OFF \
     ..
 ninja -j2
 ninja install
