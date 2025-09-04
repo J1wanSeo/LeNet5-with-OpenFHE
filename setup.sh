@@ -78,5 +78,5 @@ source ~/.bashrc
 # (echo n; echo y) | ./scripts/configure.sh
 # ./scripts/build-openfhe-development.sh
 
-gnome-terminal -- bash -c "echo 새 터미널에서 실행됨; exec bash"
+# gnome-terminal -- bash -c "echo 새 터미널에서 실행됨; exec bash"
 exit
