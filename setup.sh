@@ -82,4 +82,31 @@ source ~/.bashrc
 # ./scripts/build-openfhe-development.sh
 
 # gnome-terminal -- bash -c "echo 새 터미널에서 실행됨; exec bash"
+
+# ============================
+# 8) Swap extend
+# ============================
+swapoff -a
+rm -f /swapfile
+# 3. 새로운 swapfile 8GB 생성
+sudo fallocate -l 8G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=8192
+
+# 4. 권한 설정
+sudo chmod 600 /swapfile
+
+# 5. swap 영역으로 설정
+sudo mkswap /swapfile
+
+# 6. swap 활성화
+sudo swapon /swapfile
+
+# 7. fstab에 등록 (중복 방지 후 추가)
+sudo sed -i '/\/swapfile/d' /etc/fstab
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# 8. 결과 확인
+echo "Swap successfully resized to:"
+swapon --show
+free -h
+
 exit

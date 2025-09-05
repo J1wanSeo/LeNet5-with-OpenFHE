@@ -31,7 +31,7 @@ CMAKE_BUILD_TYPE:STRING=
 CMAKE_COLOR_MAKEFILE:BOOL=ON
 
 //CXX compiler
-CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++
+CMAKE_CXX_COMPILER:STRING=/usr/bin/clang++
 
 //LLVM archiver
 CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/llvm-ar-14
@@ -53,6 +53,9 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
+
+//No help, variable specified on the command line.
+CMAKE_C_COMPILER:UNINITIALIZED=clang
 
 //Path to a program.
 CMAKE_DLLTOOL:FILEPATH=CMAKE_DLLTOOL-NOTFOUND
@@ -194,10 +197,7 @@ HEXL_DIR:PATH=/home/ubuntu/openfhe-configurator/openfhe-staging/install/lib/cmak
 OpenFHE_DIR:PATH=/home/ubuntu/openfhe-configurator/openfhe-staging/install/lib/OpenFHE
 
 //No help, variable specified on the command line.
-OpenFHE_INTEL_HEXL_HINT_DIR:UNINITIALIZED=/usr/local/lib
-
-//No help, variable specified on the command line.
-OpenFHE_WITH_INTEL_HEXL:UNINITIALIZED=ON
+WITH_OPENMP:UNINITIALIZED=ON
 
 //Value Computed by CMake
 demo_BINARY_DIR:STATIC=/home/ubuntu/LeNet5-with-OpenFHE/build
