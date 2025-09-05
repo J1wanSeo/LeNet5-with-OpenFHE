@@ -106,4 +106,8 @@ free -h
 
 /opt/conda/bin/conda init bash
 
+cd ~
+cd LeNet5-with-OpenFHE
+mkdir build
+
 exit
