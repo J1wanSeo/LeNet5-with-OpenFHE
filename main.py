@@ -72,9 +72,11 @@ def run_cpp_fhe_inference():
         print(f"[ERROR] autotest.sh execution failed: {e}")
         return None
 
-    # 3) CPP 결과 읽기 및 예측 라벨 출력
+    # 3) CPP 결과 읽기 및 예측 라벨 출력 -- Python이랑 비교하도록
     pred = inference_only.load_fc3_output_and_predict("./build/fc3_output.txt")
     print(f"[RESULT] CPP FHE predicted label: {pred}")
+
+    # pred = inference_only.load_fc3_output_and_predict("./fc3_output.txt")
 
     return pred
 

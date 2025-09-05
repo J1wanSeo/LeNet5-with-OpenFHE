@@ -83,11 +83,25 @@ Ciphertext<DCRTPoly> ApproxReLU4_quad(CryptoContext<DCRTPoly> cc, const Cipherte
 Ciphertext<DCRTPoly> ApproxReLU4_Student(CryptoContext<DCRTPoly> cc, const Ciphertext<DCRTPoly>& ct_x) {
     // size_t slotCount = cc->GetEncodingParams()->GetBatchSize(); 
 
+    //==========================FROM HERE=================================================
     // Insert your own approximation below
+
+
+
+
+
+
 
     auto result = ct_x; // modify this when implementing your own code
 
+
+
+
+
+
+
     // Insert your own approximation above
+    //=========================TO END=======================================================
     
 
     return result;
