@@ -1,3 +1,4 @@
+mkdir build
 cd build
 rm -rf *
 # cmake .. -DOpenFHE_WITH_INTEL_HEXL=ON -DOpenFHE_INTEL_HEXL_HINT_DIR=/usr/local/lib
