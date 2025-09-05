@@ -21,8 +21,7 @@ quad_relu_polynomials = {
 
     # === 여기에 자신만의 polynomial ReLU를 추가하세요! ===
     # Example
-    # f(x) = x + x^2
-    # 'student': (lambda x: x + x**2, "x + x^2")로 수정
+    # f(x) = x + x^2로 사용하고 싶은 경우 ->  'student': (lambda x: x + x**2, "x + x^2")로 수정
     'student': (lambda x: x, "insert your own description")
 }
 
