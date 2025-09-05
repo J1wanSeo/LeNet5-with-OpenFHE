@@ -66,11 +66,6 @@ ninja install
 ldconfig
 cd ~
 
-# ============================
-# 6) Conda 환경 초기화
-# ============================
-/opt/conda/bin/conda init bash
-source ~/.bashrc
 
 # ============================
 # 7) Git 레포지토리 클론
@@ -108,5 +103,7 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 echo "Swap successfully resized to:"
 swapon --show
 free -h
+
+/opt/conda/bin/conda init bash
 
 exit
